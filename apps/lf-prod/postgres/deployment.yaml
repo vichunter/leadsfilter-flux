@@ -4,7 +4,7 @@ metadata:
   name: postgres
   namespace: lf-prod
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: postgres
@@ -21,10 +21,11 @@ spec:
             - -cssl_cert_file=/var/lib/postgresql/server.crt
             - -cssl_key_file=/var/lib/postgresql/server.key
           resources:
-            limits:
-              memory: 256Mi
             requests:
               memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 320Mi
           ports:
             - containerPort: 5432
           volumeMounts:
