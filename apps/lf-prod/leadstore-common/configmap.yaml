@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: leadstore-common
+  namespace: lf-prod
+data:
+  TZ: "America/New_York"
+  ASPNETCORE_URLS: "http://+:80"
+  Logging__LogLevel__Microsoft.AspNetCore: Information
+  Logging__LogLevel__Microsoft.EntityFrameworkCore: Warning
+  Geocoder__Url: "http://geocoder"
+  ZLenders__Url: "http://zlenders"
+  Mail__Host: "smtp-relay"
+  Mail__Port: "25"
+  Mail__UseSsl: "false"
+  Mail__FromAddress: "info@leadsfilter.com"
+  Mail__FromName: "LeadsFilter"
+  Mailer__Host: "smtp-relay"
+  Mailer__Port: "25"
+  Mailer__UseSsl: "false"
+  Mailer__AdminNotificationAddresses__0: "flowlight@gmail.com"
+  Mailer__AdminNotificationAddresses__1: "mihail.lebedev@gmail.com"
+  AppSettings__FrontendBaseUrl: "https://leadsfilter.com/portal/"
+  AppSettings__FrontendApiBaseUrl: "https://leadsfilter.com/api/"
+  # --- expected in secret 'leadstore' ---
+  # (placeholders; secret values override these via envFrom order)
+  ConnectionStrings__StoreConnection: ""  # Host=postgres:5432;Database=leadsfilter-prod;Username=...;Password=...
+  Geocoder__ApiKey: ""
+  ZLenders__ApiKey: ""
+  AppSettings__ServiceRoomApiKey: ""

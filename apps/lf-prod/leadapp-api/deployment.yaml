@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leadapp-api
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: leadapp-api
+  template:
+    metadata:
+      labels:
+        app: leadapp-api
+    spec:
+      containers:
+        - name: leadapp-api
+          image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim-arm64v8
+          workingDir: /app
+          command:
+            - bash
+            - -c
+            - chmod +x LeadApp.API && ./LeadApp.API
+          env:
+            - name: DOTNET_GCHeapHardLimit
+              value: "0xA000000"
+            - name: HTTP_PATH_BASE
+              value: /api
+          envFrom:
+            - configMapRef:
+                name: leadstore-common
+            - secretRef:
+                name: leadstore
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          hostPath:
+            path: /data/lf-prod/leadapp-api
+            type: Directory

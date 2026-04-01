@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: leadstore-admin
+  namespace: lf-prod
+spec:
+  selector:
+    app: leadstore-admin
+  ports:
+    - port: 80
+      targetPort: 80

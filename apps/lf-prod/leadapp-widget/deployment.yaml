@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leadapp-widget
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: leadapp-widget
+  template:
+    metadata:
+      labels:
+        app: leadapp-widget
+    spec:
+      containers:
+        - name: leadapp-widget
+          image: nginx:1.25-alpine-slim
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+            - name: wwwroot
+              mountPath: /app
+      volumes:
+        - name: nginx-config
+          hostPath:
+            path: /data/lf-prod/leadapp-widget/nginx/nginx.conf
+            type: File
+        - name: wwwroot
+          hostPath:
+            path: /data/lf-prod/leadapp-widget/wwwroot
+            type: Directory

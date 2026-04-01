@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: leadstore-landing
+  namespace: lf-prod
+spec:
+  selector:
+    app: leadstore-landing
+  ports:
+    - port: 80
+      targetPort: 80

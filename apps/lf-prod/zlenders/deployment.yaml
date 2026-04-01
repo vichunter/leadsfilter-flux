@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zlenders
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: zlenders
+  template:
+    metadata:
+      labels:
+        app: zlenders
+    spec:
+      containers:
+        - name: zlenders
+          image: alpine:3.19.0
+          workingDir: /app
+          command:
+            - sh
+            - -c
+            - chmod +x zlenders-api && ./zlenders-api
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              value: zlenders
+            - name: POSTGRES_USER
+              value: zlenders
+            # --- secret 'zlenders': POSTGRES_PASSWORD, API_KEYS ---
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zlenders
+                  key: POSTGRES_PASSWORD
+            - name: API_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: zlenders
+                  key: API_KEYS
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          hostPath:
+            path: /data/lf-prod/zlenders/app
+            type: Directory

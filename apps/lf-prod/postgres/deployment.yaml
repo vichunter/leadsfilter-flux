@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          args:
+            - -cssl=on
+            - -cssl_cert_file=/var/lib/postgresql/server.crt
+            - -cssl_key_file=/var/lib/postgresql/server.key
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              memory: 128Mi
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: certs
+              mountPath: /var/lib/postgresql/server.crt
+              subPath: server.crt
+            - name: certs
+              mountPath: /var/lib/postgresql/server.key
+              subPath: server.key
+      volumes:
+        - name: data
+          hostPath:
+            path: /data/lf-prod/postgres/postgres-data
+            type: Directory
+        - name: certs
+          hostPath:
+            path: /data/lf-prod/postgres/ca
+            type: Directory

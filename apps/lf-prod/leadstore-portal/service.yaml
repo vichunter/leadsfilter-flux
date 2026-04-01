@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: leadstore-portal
+  namespace: lf-prod
+spec:
+  selector:
+    app: leadstore-portal
+  ports:
+    - port: 80
+      targetPort: 80

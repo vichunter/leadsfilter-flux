@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smtp-relay
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: smtp-relay
+  template:
+    metadata:
+      labels:
+        app: smtp-relay
+    spec:
+      containers:
+        - name: smtp-relay
+          image: boky/postfix
+          env:
+            - name: HOSTNAME
+              value: server
+            - name: RELAYHOST
+              value: smtp-relay.gmail.com:587
+            - name: RELAYHOST_TLS_LEVEL
+              value: may
+            - name: MYNETWORKS
+              value: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+            - name: ALLOW_EMPTY_SENDER_DOMAINS
+              value: "true"
+          ports:
+            - containerPort: 25
+            - containerPort: 587

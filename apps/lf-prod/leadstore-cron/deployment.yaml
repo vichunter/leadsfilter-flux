@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leadstore-cron
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: leadstore-cron
+  template:
+    metadata:
+      labels:
+        app: leadstore-cron
+    spec:
+      containers:
+        - name: leadstore-cron
+          image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim-arm64v8
+          workingDir: /app
+          command:
+            - bash
+            - -c
+            - chmod +x LeadStore.Cron && ./LeadStore.Cron
+          env:
+            - name: DOTNET_GCHeapHardLimit
+              value: "0xA000000"
+            - name: HTTP_PATH_BASE
+              value: /api
+          envFrom:
+            - configMapRef:
+                name: leadstore-common
+            - secretRef:
+                name: leadstore
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          hostPath:
+            path: /data/lf-prod/leadstore-cron
+            type: Directory
