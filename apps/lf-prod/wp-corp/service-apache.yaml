@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wp-corp
+  namespace: lf-prod
+spec:
+  selector:
+    app: wp-corp
+  ports:
+    - port: 80
+      targetPort: 80

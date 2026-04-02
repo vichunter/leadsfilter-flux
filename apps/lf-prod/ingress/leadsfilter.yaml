@@ -5,8 +5,14 @@ metadata:
   namespace: lf-prod
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - leadsfilter.com
+        - www.leadsfilter.com
+      secretName: leadsfilter-tls
   rules:
     - host: leadsfilter.com
       http:

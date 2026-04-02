@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wp-corp
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: wp-corp
+  template:
+    metadata:
+      labels:
+        app: wp-corp
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:11.4-noble
+          # --- secret 'wp-corp': MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_RANDOM_ROOT_PASSWORD ---
+          envFrom:
+            - secretRef:
+                name: wp-corp
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 50m
+            limits:
+              memory: 400Mi
+          volumeMounts:
+            - name: db
+              mountPath: /var/lib/mysql
+            - name: tmp-host
+              mountPath: /tmp_host
+        - name: apache
+          image: wordpress:6.5-php8.3-apache
+          # --- secret 'wp-corp': WORDPRESS_DB_HOST, WORDPRESS_DB_USER, WORDPRESS_DB_NAME,
+          #     WORDPRESS_DB_PASSWORD, WORDPRESS_SMTP_HOST, WORDPRESS_SMTP_PORT,
+          #     WORDPRESS_SMTP_FROM, WORDPRESS_SMTP_FROM_NAME ---
+          envFrom:
+            - secretRef:
+                name: wp-corp
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 50m
+            limits:
+              memory: 1Gi
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /var/www/html
+            - name: apache-config
+              mountPath: /etc/apache2/apache2.conf
+            - name: tmp-host
+              mountPath: /tmp_host
+      volumes:
+        - name: db
+          hostPath:
+            path: /data/lf-prod/wp-corp/db
+            type: Directory
+        - name: html
+          hostPath:
+            path: /data/lf-prod/wp-corp/www/html
+            type: Directory
+        - name: apache-config
+          hostPath:
+            path: /data/lf-prod/wp-corp/apache2/apache2.conf
+            type: File
+        - name: tmp-host
+          hostPath:
+            path: /data/lf-prod/wp-corp/tmp_host
+            type: Directory

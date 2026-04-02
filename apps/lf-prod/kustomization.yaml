@@ -15,4 +15,5 @@ resources:
   - leadstore-portal/
   - leadstore-landing/
   - leadstore-shared/
-  - ingress-leadsfilter/
+  - wp-corp/
+  - ingress/
