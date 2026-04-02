@@ -4,7 +4,7 @@ metadata:
   name: geocoder
   namespace: lf-prod
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: geocoder
@@ -21,26 +21,10 @@ spec:
             - sh
             - -c
             - chmod +x geocoder-api && ./geocoder-api
-          env:
-            - name: POSTGRES_HOST
-              value: postgres
-            - name: POSTGRES_PORT
-              value: "5432"
-            - name: POSTGRES_DB
-              value: geocoder
-            - name: POSTGRES_USER
-              value: geocoder
-            # --- secret 'geocoder': POSTGRES_PASSWORD, API_KEYS ---
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: geocoder
-                  key: POSTGRES_PASSWORD
-            - name: API_KEYS
-              valueFrom:
-                secretKeyRef:
-                  name: geocoder
-                  key: API_KEYS
+          # --- secret 'geocoder': POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, API_KEYS ---
+          envFrom:
+            - secretRef:
+                name: geocoder
           ports:
             - containerPort: 80
           volumeMounts:
