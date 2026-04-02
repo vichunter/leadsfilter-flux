@@ -30,5 +30,5 @@ spec:
       volumes:
         - name: app
           hostPath:
-            path: /data/lf-prod/migrate
+            path: /data/lf-prod/leadstore-migrate
             type: Directory
