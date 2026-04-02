@@ -1,0 +1,77 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: leadsfilter
+  namespace: lf-prod
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: leadsfilter.com
+      http:
+        paths:
+          - path: /admin2
+            pathType: Prefix
+            backend:
+              service:
+                name: leadstore-admin
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: leadstore-api
+                port:
+                  number: 80
+          - path: /portal
+            pathType: Prefix
+            backend:
+              service:
+                name: leadstore-portal
+                port:
+                  number: 80
+          - path: /shared
+            pathType: Prefix
+            backend:
+              service:
+                name: leadstore-shared
+                port:
+                  number: 80
+          # TODO: not migrated yet — runs on ec2-3-128-58-65
+          # - path: /serviceroom
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: serviceroom-front
+          #       port:
+          #         number: 80
+          # - path: /serviceroom/admin
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: serviceroom-back
+          #       port:
+          #         number: 80
+          # - path: /serviceroom/api
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: serviceroom-back
+          #       port:
+          #         number: 80
+          # - path: /corp
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: corp
+          #       port:
+          #         number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: leadstore-landing
+                port:
+                  number: 80
