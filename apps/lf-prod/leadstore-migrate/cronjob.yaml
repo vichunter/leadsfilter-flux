@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: leadstore-migrate-manual
+  namespace: lf-prod
+spec:
+  schedule: "0 0 1 1 */100"
+  suspend: true
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: migrate
+              image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim
+              workingDir: /app
+              command:
+                - bash
+                - -c
+                - chmod +x efbundle && ./efbundle -- --environment Production
+              envFrom:
+                - configMapRef:
+                    name: leadstore-common
+                - secretRef:
+                    name: leadstore
+              volumeMounts:
+                - name: app
+                  mountPath: /app
+          volumes:
+            - name: app
+              hostPath:
+                path: /data/lf-prod/leadstore-migrate
+                type: Directory
