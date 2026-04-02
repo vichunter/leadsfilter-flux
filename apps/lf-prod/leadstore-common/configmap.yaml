@@ -4,6 +4,15 @@ metadata:
   name: leadstore-common
   namespace: lf-prod
 data:
+  # Aggressiveness of returning unused heap memory back to the OS (0-9).
+  # 0 = default (GC keeps memory for future allocations).
+  # 9 = most aggressive (returns memory immediately, higher CPU cost for GC).
+  # 8 is a good balance for long-running containerized services.
+  DOTNET_GCConserveMemory: "8"
+  # When physical memory usage exceeds this percentage, GC becomes more aggressive
+  # to avoid OOM kills. Applies to the container memory limit (cgroup-aware in .NET 5+).
+  # Default is 75. Lowered to 50 to trigger more proactive collection in constrained containers.
+  DOTNET_GCHighMemPercent: "50"
   TZ: "America/New_York"
   ASPNETCORE_URLS: "http://+:80"
   Logging__LogLevel__Microsoft.AspNetCore: Information
