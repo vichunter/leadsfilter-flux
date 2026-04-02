@@ -13,7 +13,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: migrate
-          image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim-arm64v8
+          image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim
           workingDir: /app
           command:
             - bash
