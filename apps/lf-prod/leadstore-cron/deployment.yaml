@@ -5,6 +5,8 @@ metadata:
   namespace: lf-prod
 spec:
   replicas: 0
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: leadstore-cron
