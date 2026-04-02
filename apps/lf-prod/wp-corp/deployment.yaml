@@ -4,7 +4,7 @@ metadata:
   name: wp-corp
   namespace: lf-prod
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: wp-corp
