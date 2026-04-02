@@ -4,7 +4,7 @@ metadata:
   name: zlenders
   namespace: lf-prod
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: zlenders
@@ -21,26 +21,10 @@ spec:
             - sh
             - -c
             - chmod +x zlenders-api && ./zlenders-api
-          env:
-            - name: POSTGRES_HOST
-              value: postgres
-            - name: POSTGRES_PORT
-              value: "5432"
-            - name: POSTGRES_DB
-              value: zlenders
-            - name: POSTGRES_USER
-              value: zlenders
-            # --- secret 'zlenders': POSTGRES_PASSWORD, API_KEYS ---
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: zlenders
-                  key: POSTGRES_PASSWORD
-            - name: API_KEYS
-              valueFrom:
-                secretKeyRef:
-                  name: zlenders
-                  key: API_KEYS
+          # --- secret 'zlenders': POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, API_KEYS ---
+          envFrom:
+            - secretRef:
+                name: zlenders
           ports:
             - containerPort: 80
           volumeMounts:
@@ -49,5 +33,5 @@ spec:
       volumes:
         - name: app
           hostPath:
-            path: /data/lf-prod/zlenders/app
+            path: /data/lf-prod/zlenders
             type: Directory
