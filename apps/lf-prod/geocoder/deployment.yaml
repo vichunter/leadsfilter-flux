@@ -33,5 +33,5 @@ spec:
       volumes:
         - name: app
           hostPath:
-            path: /data/lf-prod/geocoder/app
+            path: /data/lf-prod/geocoder
             type: Directory
