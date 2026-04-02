@@ -13,6 +13,7 @@ spec:
       labels:
         app: leadstore-admin
     spec:
+      enableServiceLinks: false
       containers:
         - name: leadstore-admin
           image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim

@@ -13,6 +13,7 @@ spec:
       labels:
         app: zlenders
     spec:
+      enableServiceLinks: false
       containers:
         - name: zlenders
           image: alpine:3.19.0

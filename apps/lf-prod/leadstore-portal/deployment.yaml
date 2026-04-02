@@ -13,6 +13,7 @@ spec:
       labels:
         app: leadstore-portal
     spec:
+      enableServiceLinks: false
       containers:
         - name: leadstore-portal
           image: nginx:1.25-alpine-slim

@@ -13,6 +13,7 @@ spec:
       labels:
         app: leadapp-widget
     spec:
+      enableServiceLinks: false
       containers:
         - name: leadapp-widget
           image: nginx:1.25-alpine-slim

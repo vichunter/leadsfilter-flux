@@ -12,6 +12,7 @@ spec:
       ttlSecondsAfterFinished: 3600
       template:
         spec:
+          enableServiceLinks: false
           restartPolicy: Never
           containers:
             - name: migrate

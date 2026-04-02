@@ -13,6 +13,7 @@ spec:
       labels:
         app: leadstore-shared
     spec:
+      enableServiceLinks: false
       containers:
         - name: leadstore-shared
           image: nginx:1.25-alpine-slim

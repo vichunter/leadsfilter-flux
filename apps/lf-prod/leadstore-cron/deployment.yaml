@@ -13,6 +13,7 @@ spec:
       labels:
         app: leadstore-cron
     spec:
+      enableServiceLinks: false
       containers:
         - name: leadstore-cron
           image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim

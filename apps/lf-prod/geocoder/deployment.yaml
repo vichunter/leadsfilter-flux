@@ -13,6 +13,7 @@ spec:
       labels:
         app: geocoder
     spec:
+      enableServiceLinks: false
       containers:
         - name: geocoder
           image: alpine:3.19.0

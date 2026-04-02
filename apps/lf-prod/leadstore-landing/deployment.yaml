@@ -13,6 +13,7 @@ spec:
       labels:
         app: leadstore-landing
     spec:
+      enableServiceLinks: false
       containers:
         - name: leadstore-landing
           image: nginx:1.25-alpine-slim
