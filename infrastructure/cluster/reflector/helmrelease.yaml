@@ -17,7 +17,7 @@ spec:
   values:
     configuration:
       watcher:
-        timeout: "60"
+        timeout: "30"
     cron:
       enabled: true
       schedule: "*/30 * * * *"
