@@ -18,7 +18,7 @@ spec:
         - name: ecr-credentials-leadsfilter
       containers:
         - name: serviceroom-worker
-          image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-backend:PLACEHOLDER # {"$imagepolicy": "flux-system:serviceroom-backend-prod"}
+          image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-backend:bbf4f8a-2026-04-03.054236-prod # {"$imagepolicy": "flux-system:serviceroom-backend-prod"}
           command:
             - celery
             - --app=worker
