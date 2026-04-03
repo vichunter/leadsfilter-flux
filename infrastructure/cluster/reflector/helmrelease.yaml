@@ -15,6 +15,9 @@ spec:
         name: emberstack
         namespace: flux-system
   values:
+    configuration:
+      watcher:
+        timeout: "60"
     cron:
       enabled: true
       schedule: "*/30 * * * *"
