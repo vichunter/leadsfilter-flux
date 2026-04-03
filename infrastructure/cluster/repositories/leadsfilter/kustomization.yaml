@@ -1,7 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ecr-credentials-sync-configmap.yaml
-  - ecr-credentials-sync-cronjob.yaml
-  - serviceroom-backend-imagerepository.yaml
-  - serviceroom-backend-prod-imagepolicy.yaml
+  - ecr-credentials-sync-cm.yaml
+  - ecr-credentials-sync-cj.yaml
+  - serviceroom-backend-ir.yaml
+  - serviceroom-backend-prod-ip.yaml
+  - serviceroom-backend-iua.yaml
