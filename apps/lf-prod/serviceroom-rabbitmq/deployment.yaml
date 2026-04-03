@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serviceroom-rabbitmq
+  namespace: lf-prod
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: serviceroom-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: serviceroom-rabbitmq
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: serviceroom-rabbitmq
+          image: rabbitmq:3.8-management
+          command:
+            - sh
+            - -c
+            - |
+              (grep raft.wal_max_size_bytes /usr/local/bin/docker-entrypoint.sh || sed -i "$ i\rabbit_set_config 'raft.wal_max_size_bytes' 8000000" /usr/local/bin/docker-entrypoint.sh); docker-entrypoint.sh rabbitmq-server
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 256Mi
+          envFrom:
+            - secretRef:
+                name: serviceroom
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/rabbitmq
+      volumes:
+        - name: data
+          hostPath:
+            path: /data/lf-prod/serviceroom-rabbitmq
+            type: Directory

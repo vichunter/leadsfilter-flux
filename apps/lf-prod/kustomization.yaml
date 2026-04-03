@@ -16,4 +16,6 @@ resources:
   - leadstore-landing/
   - leadstore-shared/
   - wp-corp/
+  - serviceroom-postgres/
+  - serviceroom-rabbitmq/
   - ingress/

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serviceroom-postgres
+  namespace: lf-prod
+spec:
+  replicas: 0
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: serviceroom-postgres
+  template:
+    metadata:
+      labels:
+        app: serviceroom-postgres
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: serviceroom-postgres
+          image: postgres:12.0-alpine
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 256Mi
+          envFrom:
+            - secretRef:
+                name: serviceroom
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          hostPath:
+            path: /data/lf-prod/serviceroom-postgres
+            type: Directory

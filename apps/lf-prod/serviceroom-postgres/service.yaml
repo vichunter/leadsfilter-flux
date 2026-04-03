@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: serviceroom-postgres
+  namespace: lf-prod
+spec:
+  selector:
+    app: serviceroom-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
