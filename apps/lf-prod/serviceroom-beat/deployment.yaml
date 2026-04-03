@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serviceroom-beat
+  namespace: lf-prod
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: serviceroom-beat
+  template:
+    metadata:
+      labels:
+        app: serviceroom-beat
+    spec:
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: ecr-credentials-leadsfilter
+      containers:
+        - name: beat
+          image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-backend:PLACEHOLDER # {"$imagepolicy": "flux-system:serviceroom-backend-prod"}
+          command:
+            - celery
+            - --app=worker
+            - beat
+            - --loglevel=INFO
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 50m
+            limits:
+              memory: 256Mi
+          envFrom:
+            - secretRef:
+                name: serviceroom

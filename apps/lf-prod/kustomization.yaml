@@ -18,6 +18,7 @@ resources:
   - wp-corp/
   - serviceroom-postgres/
   - serviceroom-api/
+  - serviceroom-beat/
   - serviceroom-rabbitmq/
   - serviceroom-worker/
   - ingress/
