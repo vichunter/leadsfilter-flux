@@ -26,20 +26,20 @@ spec:
             - sh
             - -c
             - |
+              # generate config always (safe to re-run, does not touch PKI)
+              ovpn_genconfig \
+                -u ${SERVER_URL} \
+                -d \
+                -p "route ${SERVICE_NETWORK} ${SERVICE_MASK}" \
+                -n ${DNS_IP}
+              # init PKI only on first run
               if [ ! -f /etc/openvpn/pki/ca.crt ]; then
-                ovpn_genconfig \
-                  -u ${SERVER_URL} \
-                  -d \
-                  -p "route ${SERVICE_NETWORK} ${SERVICE_MASK}" \
-                  -n ${DNS_IP}
                 EASYRSA_BATCH=1 EASYRSA_REQ_CN="openvpn-ca" ovpn_initpki nopass
               fi
               # kylemanna/openvpn always writes port 1194 regardless of SERVER_URL
               # with hostNetwork there is no Docker port mapping, so fix it explicitly
               PORT=$(echo ${SERVER_URL} | sed 's/.*://')
               sed -i "s/^port 1194/port ${PORT}/" /etc/openvpn/openvpn.conf
-              # remove redirect-gateway — we only want access to cluster, not full tunnel
-              sed -i '/^push "redirect-gateway/d' /etc/openvpn/openvpn.conf
           envFrom:
             - configMapRef:
                 name: openvpn-tcp-env
