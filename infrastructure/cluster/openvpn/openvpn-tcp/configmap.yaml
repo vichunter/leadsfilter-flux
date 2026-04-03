@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openvpn-tcp-env
+  namespace: openvpn
+data:
+  # External IP of the VPS node
+  SERVER_URL: "tcp://178.156.239.214:30094"
+
+  # Service CIDR — check with: kubectl get svc -n kube-system kube-dns
+  SERVICE_NETWORK: "10.96.0.0"
+  SERVICE_MASK: "255.240.0.0"
+
+  # CoreDNS ClusterIP — check with: kubectl get svc -n kube-system kube-dns
+  DNS_IP: "10.96.0.10"
+
+  # VPN client subnet assigned by OpenVPN
+  VPN_SUBNET: "10.8.0.0/24"
+
+  # Node network interface facing the internet
+  NODE_IFACE: "eth0"

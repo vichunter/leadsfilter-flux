@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openvpn-tcp
+  namespace: openvpn
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openvpn-tcp
+  template:
+    metadata:
+      labels:
+        app: openvpn-tcp
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
+      initContainers:
+        - name: init-pki
+          image: kylemanna/openvpn:2.4
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f /etc/openvpn/pki/ca.crt ]; then
+                ovpn_genconfig \
+                  -u ${SERVER_URL} \
+                  -p "route ${SERVICE_NETWORK} ${SERVICE_MASK}" \
+                  -n ${DNS_IP}
+                EASYRSA_BATCH=1 EASYRSA_REQ_CN="openvpn-ca" ovpn_initpki nopass
+              fi
+          envFrom:
+            - configMapRef:
+                name: openvpn-tcp-env
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          volumeMounts:
+            - name: pki
+              mountPath: /etc/openvpn
+
+        - name: init-iptables
+          image: kylemanna/openvpn:2.4
+          command:
+            - sh
+            - -c
+            - |
+              sysctl -w net.ipv4.ip_forward=1
+              iptables -t nat -C POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE 2>/dev/null \
+                || iptables -t nat -A POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE
+          envFrom:
+            - configMapRef:
+                name: openvpn-tcp-env
+          securityContext:
+            privileged: true
+
+      containers:
+        - name: openvpn-tcp
+          image: kylemanna/openvpn:2.4
+          ports:
+            - containerPort: 30094
+              protocol: TCP
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          volumeMounts:
+            - name: pki
+              mountPath: /etc/openvpn
+            - name: dev-tun
+              mountPath: /dev/net/tun
+
+      volumes:
+        - name: pki
+          hostPath:
+            path: /data/openvpn/pki
+            type: DirectoryOrCreate
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
