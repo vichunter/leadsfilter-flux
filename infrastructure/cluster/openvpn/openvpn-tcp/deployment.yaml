@@ -62,6 +62,15 @@ spec:
               sysctl -w net.ipv4.ip_forward=1
               iptables-legacy -t nat -C POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE 2>/dev/null \
                 || iptables-legacy -t nat -A POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE
+              # allow VPN clients to reach private networks (RFC 1918) only, block internet
+              iptables-legacy -C FORWARD -s ${VPN_SUBNET} -d 10.0.0.0/8 -j ACCEPT 2>/dev/null \
+                || iptables-legacy -A FORWARD -s ${VPN_SUBNET} -d 10.0.0.0/8 -j ACCEPT
+              iptables-legacy -C FORWARD -s ${VPN_SUBNET} -d 172.16.0.0/12 -j ACCEPT 2>/dev/null \
+                || iptables-legacy -A FORWARD -s ${VPN_SUBNET} -d 172.16.0.0/12 -j ACCEPT
+              iptables-legacy -C FORWARD -s ${VPN_SUBNET} -d 192.168.0.0/16 -j ACCEPT 2>/dev/null \
+                || iptables-legacy -A FORWARD -s ${VPN_SUBNET} -d 192.168.0.0/16 -j ACCEPT
+              iptables-legacy -C FORWARD -s ${VPN_SUBNET} -j DROP 2>/dev/null \
+                || iptables-legacy -A FORWARD -s ${VPN_SUBNET} -j DROP
           envFrom:
             - configMapRef:
                 name: openvpn-tcp-env
