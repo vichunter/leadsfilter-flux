@@ -86,7 +86,7 @@ spec:
       volumes:
         - name: pki
           hostPath:
-            path: /data/openvpn/pki
+            path: /data/openvpn-tcp/pki
             type: DirectoryOrCreate
         - name: dev-tun
           hostPath:
