@@ -19,6 +19,7 @@ resources:
   - serviceroom-postgres/
   - serviceroom-api/
   - serviceroom-beat/
+  - serviceroom-flower/
   - serviceroom-rabbitmq/
   - serviceroom-worker/
   - ingress/

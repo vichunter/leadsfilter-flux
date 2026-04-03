@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serviceroom-flower
+  namespace: lf-prod
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: serviceroom-flower
+  template:
+    metadata:
+      labels:
+        app: serviceroom-flower
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: flower
+          image: zoomeranalytics/flower:0.9.1-4.0.2
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 128Mi
+          envFrom:
+            - secretRef:
+                name: serviceroom
+          ports:
+            - containerPort: 5555
