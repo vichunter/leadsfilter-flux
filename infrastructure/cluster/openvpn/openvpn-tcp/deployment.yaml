@@ -40,6 +40,7 @@ spec:
               # with hostNetwork there is no Docker port mapping, so fix it explicitly
               PORT=$(echo ${SERVER_URL} | sed 's/.*://')
               sed -i "s/^port 1194/port ${PORT}/" /etc/openvpn/openvpn.conf
+              # tun0 is used by this instance; tun1 is reserved for openvpn-udp
           envFrom:
             - configMapRef:
                 name: openvpn-tcp-env
@@ -56,6 +57,8 @@ spec:
             - sh
             - -c
             - |
+              # clean up leftover tun device from previous pod instance
+              ip link delete tun0 2>/dev/null || true
               sysctl -w net.ipv4.ip_forward=1
               iptables-legacy -t nat -C POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE 2>/dev/null \
                 || iptables-legacy -t nat -A POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE
