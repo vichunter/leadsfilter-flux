@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - ecr-credentials-sync-configmap.yaml
   - ecr-credentials-sync-cronjob.yaml
+  - serviceroom-backend-imagerepository.yaml
+  - serviceroom-backend-prod-imagepolicy.yaml
