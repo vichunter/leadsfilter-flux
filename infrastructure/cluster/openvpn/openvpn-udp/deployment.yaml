@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openvpn-tcp
+  name: openvpn-udp
   namespace: openvpn
 spec:
   replicas: 1
@@ -9,11 +9,11 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: openvpn-tcp
+      app: openvpn-udp
   template:
     metadata:
       labels:
-        app: openvpn-tcp
+        app: openvpn-udp
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
@@ -29,6 +29,7 @@ spec:
               if [ ! -f /etc/openvpn/pki/ca.crt ]; then
                 ovpn_genconfig \
                   -u ${SERVER_URL} \
+                  -s ${VPN_SERVER_SUBNET} \
                   -d \
                   -p "route ${SERVICE_NETWORK} ${SERVICE_MASK}" \
                   -n ${DNS_IP}
@@ -42,7 +43,7 @@ spec:
               sed -i '/^push "redirect-gateway/d' /etc/openvpn/openvpn.conf
           envFrom:
             - configMapRef:
-                name: openvpn-tcp-env
+                name: openvpn-udp-env
           securityContext:
             capabilities:
               add: ["NET_ADMIN"]
@@ -61,16 +62,16 @@ spec:
                 || iptables-legacy -t nat -A POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE
           envFrom:
             - configMapRef:
-                name: openvpn-tcp-env
+                name: openvpn-udp-env
           securityContext:
             privileged: true
 
       containers:
-        - name: openvpn-tcp
+        - name: openvpn-udp
           image: kylemanna/openvpn:2.4
           ports:
             - containerPort: 30094
-              protocol: TCP
+              protocol: UDP
           securityContext:
             capabilities:
               add: ["NET_ADMIN"]
@@ -83,7 +84,7 @@ spec:
       volumes:
         - name: pki
           hostPath:
-            path: /data/openvpn/pki
+            path: /data/openvpn-udp/pki
             type: DirectoryOrCreate
         - name: dev-tun
           hostPath:
