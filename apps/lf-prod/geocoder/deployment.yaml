@@ -14,6 +14,8 @@ spec:
         app: geocoder
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: geocoder
           image: alpine:3.19.0

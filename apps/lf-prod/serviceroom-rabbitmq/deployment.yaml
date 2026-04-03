@@ -16,6 +16,8 @@ spec:
         app: serviceroom-rabbitmq
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: serviceroom-rabbitmq
           image: rabbitmq:3.8-management

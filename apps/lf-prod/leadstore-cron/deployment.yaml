@@ -16,6 +16,8 @@ spec:
         app: leadstore-cron
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: leadstore-cron
           image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim

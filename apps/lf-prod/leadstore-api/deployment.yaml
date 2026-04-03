@@ -14,6 +14,8 @@ spec:
         app: leadstore-api
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: leadstore-api
           image: mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim

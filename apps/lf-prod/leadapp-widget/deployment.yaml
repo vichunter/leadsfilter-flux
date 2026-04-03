@@ -14,6 +14,8 @@ spec:
         app: leadapp-widget
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: leadapp-widget
           image: nginx:1.25-alpine-slim

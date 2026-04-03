@@ -16,6 +16,8 @@ spec:
         app: postgres
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: postgres
           image: postgres:16

@@ -16,6 +16,8 @@ spec:
         app: serviceroom-postgres
     spec:
       enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
       containers:
         - name: serviceroom-postgres
           image: postgres:12.0-alpine
