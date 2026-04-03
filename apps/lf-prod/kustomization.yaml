@@ -16,6 +16,7 @@ resources:
   - leadstore-landing/
   - leadstore-shared/
   - wp-corp/
+  - pgadmin/
   - serviceroom-postgres/
   - serviceroom-api/
   - serviceroom-beat/
