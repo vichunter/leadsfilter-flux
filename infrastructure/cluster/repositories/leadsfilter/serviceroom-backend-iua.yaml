@@ -16,7 +16,7 @@ spec:
       author:
         name: flux
         email: ""
-      messageTemplate: '{{range .Changed.Changes}}{{.OldValue}} -> {{.NewTag}}{{"\n"}}{{end}}'
+      messageTemplate: '{{range .Changed.Changes}}{{.OldValue}} -> {{(splitList ":" .NewValue) | last}}{{"\n"}}{{end}}'
     push:
       branch: master
   update:
