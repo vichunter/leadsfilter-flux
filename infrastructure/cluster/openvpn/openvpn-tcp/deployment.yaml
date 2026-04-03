@@ -54,8 +54,8 @@ spec:
             - -c
             - |
               sysctl -w net.ipv4.ip_forward=1
-              iptables -t nat -C POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE 2>/dev/null \
-                || iptables -t nat -A POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE
+              iptables-legacy -t nat -C POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE 2>/dev/null \
+                || iptables-legacy -t nat -A POSTROUTING -s ${VPN_SUBNET} -o ${NODE_IFACE} -j MASQUERADE
           envFrom:
             - configMapRef:
                 name: openvpn-tcp-env

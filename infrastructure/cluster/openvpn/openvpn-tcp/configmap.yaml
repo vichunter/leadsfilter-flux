@@ -14,8 +14,9 @@ data:
   # CoreDNS ClusterIP — check with: kubectl get svc -n kube-system kube-dns
   DNS_IP: "10.96.0.10"
 
-  # VPN client subnet assigned by OpenVPN
-  VPN_SUBNET: "10.8.0.0/24"
+  # VPN client subnet assigned by OpenVPN server (defined in openvpn.conf: "server 192.168.255.0 255.255.255.0")
+  # DO NOT CHANGE — must match the actual subnet used by ovpn_genconfig, not a custom value
+  VPN_SUBNET: "192.168.255.0/24"
 
   # Node network interface facing the internet
   NODE_IFACE: "eth0"
