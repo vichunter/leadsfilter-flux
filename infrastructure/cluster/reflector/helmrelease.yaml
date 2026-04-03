@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: reflector
+  namespace: kube-system
+spec:
+  interval: 999999h
+  releaseName: reflector
+  chart:
+    spec:
+      chart: reflector
+      version: "^9"
+      sourceRef:
+        kind: HelmRepository
+        name: emberstack
+        namespace: flux-system
+  values:
+    cron:
+      enabled: true
+      schedule: "*/30 * * * *"
+      activeDeadlineSeconds: 60
+    resources:
+      requests:
+        cpu: 10m
+        memory: 40Mi
