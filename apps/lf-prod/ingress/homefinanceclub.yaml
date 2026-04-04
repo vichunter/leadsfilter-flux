@@ -23,7 +23,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: serviceroom-api
+                name: serviceroom-backend
                 port:
                   number: 80
           - path: /serviceroom/

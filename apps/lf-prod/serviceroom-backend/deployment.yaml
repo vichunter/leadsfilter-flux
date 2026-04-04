@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: serviceroom-api
+  name: serviceroom-backend
   namespace: lf-prod
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: serviceroom-api
+      app: serviceroom-backend
   template:
     metadata:
       labels:
-        app: serviceroom-api
+        app: serviceroom-backend
     spec:
       enableServiceLinks: false
       imagePullSecrets:
         - name: ecr-credentials-leadsfilter
       containers:
-        - name: serviceroom-api
+        - name: serviceroom-backend
           image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-backend:bbf4f8a-2026-04-03.054236-prod # {"$imagepolicy": "flux-system:serviceroom-backend-prod"}
           command:
             - gunicorn
