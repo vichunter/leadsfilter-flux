@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backrest
+  namespace: backrest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backrest
+  template:
+    metadata:
+      labels:
+        app: backrest
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
+      containers:
+        - name: backrest
+          image: garethgeorge/backrest:latest
+          ports:
+            - containerPort: 9898
+              name: http
+          env:
+            - name: BACKREST_DATA
+              value: /backrest-data/data
+            - name: BACKREST_CONFIG
+              value: /backrest-data/config/config.json
+            - name: XDG_CACHE_HOME
+              value: /backrest-data/cache
+            - name: TZ
+              value: UTC
+          volumeMounts:
+            - name: source-data
+              mountPath: /data
+            - name: backrest-data
+              mountPath: /backrest-data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+      volumes:
+        - name: source-data
+          hostPath:
+            path: /data
+        - name: backrest-data
+          hostPath:
+            path: /data/backrest
+            type: DirectoryOrCreate
