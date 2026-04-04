@@ -71,7 +71,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: wp-corp
+                name: leadsfilter-corp-wp
                 port:
                   number: 80
           - path: /

@@ -15,7 +15,7 @@ resources:
   - leadstore-portal/
   - leadstore-landing/
   - leadstore-shared/
-  - wp-corp/
+  - leadsfilter-corp-wp/
   - pgadmin/
   - serviceroom-postgres/
   - serviceroom-backend/

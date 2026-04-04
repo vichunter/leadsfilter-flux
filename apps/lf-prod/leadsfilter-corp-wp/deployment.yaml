@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wp-corp
+  name: leadsfilter-corp-wp
   namespace: lf-prod
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: wp-corp
+      app: leadsfilter-corp-wp
   template:
     metadata:
       labels:
-        app: wp-corp
+        app: leadsfilter-corp-wp
     spec:
       enableServiceLinks: false
       nodeSelector:
@@ -21,10 +21,10 @@ spec:
       containers:
         - name: mariadb
           image: mariadb:11.4-noble
-          # --- secret 'wp-corp': MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_RANDOM_ROOT_PASSWORD ---
+          # --- secret 'leadsfilter-corp-wp': MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_RANDOM_ROOT_PASSWORD ---
           envFrom:
             - secretRef:
-                name: wp-corp
+                name: leadsfilter-corp-wp
           resources:
             requests:
               memory: 128Mi
@@ -38,12 +38,12 @@ spec:
               mountPath: /tmp_host
         - name: apache
           image: wordpress:6.5-php8.3-apache
-          # --- secret 'wp-corp': WORDPRESS_DB_HOST, WORDPRESS_DB_USER, WORDPRESS_DB_NAME,
+          # --- secret 'leadsfilter-corp-wp': WORDPRESS_DB_HOST, WORDPRESS_DB_USER, WORDPRESS_DB_NAME,
           #     WORDPRESS_DB_PASSWORD, WORDPRESS_SMTP_HOST, WORDPRESS_SMTP_PORT,
           #     WORDPRESS_SMTP_FROM, WORDPRESS_SMTP_FROM_NAME ---
           envFrom:
             - secretRef:
-                name: wp-corp
+                name: leadsfilter-corp-wp
           resources:
             requests:
               memory: 128Mi
@@ -62,17 +62,17 @@ spec:
       volumes:
         - name: db
           hostPath:
-            path: /data/lf-prod/wp-corp/db
+            path: /data/lf-prod/leadsfilter-corp-wp/db
             type: Directory
         - name: html
           hostPath:
-            path: /data/lf-prod/wp-corp/www/html
+            path: /data/lf-prod/leadsfilter-corp-wp/www/html
             type: Directory
         - name: apache-config
           hostPath:
-            path: /data/lf-prod/wp-corp/apache2/apache2.conf
+            path: /data/lf-prod/leadsfilter-corp-wp/apache2/apache2.conf
             type: File
         - name: tmp-host
           hostPath:
-            path: /data/lf-prod/wp-corp/tmp_host
+            path: /data/lf-prod/leadsfilter-corp-wp/tmp_host
             type: Directory
