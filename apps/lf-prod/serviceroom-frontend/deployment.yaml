@@ -18,7 +18,7 @@ spec:
         - name: ecr-credentials-leadsfilter
       containers:
         - name: serviceroom-frontend
-          image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-frontend:PLACEHOLDER # {"$imagepolicy": "flux-system:serviceroom-frontend-prod"}
+          image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-frontend:bbf4f8a-2026-04-03.054215-prod # {"$imagepolicy": "flux-system:serviceroom-frontend-prod"}
           resources:
             requests:
               memory: 64Mi
