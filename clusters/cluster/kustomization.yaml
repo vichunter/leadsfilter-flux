@@ -7,3 +7,4 @@ resources:
   - infra-lf-stage.yaml
   - infra-lf-prod.yaml
   - infra-cluster.yaml
+  - infra-cert-manager-issuer.yaml
