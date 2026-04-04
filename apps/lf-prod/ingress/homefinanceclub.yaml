@@ -26,53 +26,13 @@ spec:
                 name: serviceroom-api
                 port:
                   number: 80
-          # TODO: serviceroom-frontend not deployed yet
-          # - path: /serviceroom/
-          #   pathType: Prefix
-          #   backend:
-          #     service:
-          #       name: serviceroom-frontend
-          #       port:
-          #         number: 80
-          - path: /api/
+          - path: /serviceroom/
             pathType: Prefix
             backend:
               service:
-                name: leadapp-api
+                name: serviceroom-frontend
                 port:
                   number: 80
-          - path: /wapp/
-            pathType: Prefix
-            backend:
-              service:
-                name: leadapp-widget
-                port:
-                  number: 80
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: hfc-wp
-                port:
-                  number: 80
-    - host: www.homefinanceclub.com
-      http:
-        paths:
-          - path: /serviceroom/api/
-            pathType: Prefix
-            backend:
-              service:
-                name: serviceroom-api
-                port:
-                  number: 80
-          # TODO: serviceroom-frontend not deployed yet
-          # - path: /serviceroom/
-          #   pathType: Prefix
-          #   backend:
-          #     service:
-          #       name: serviceroom-frontend
-          #       port:
-          #         number: 80
           - path: /api/
             pathType: Prefix
             backend:
