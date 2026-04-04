@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hfc-wp
+  namespace: lf-prod
+  labels:
+    app: hfc-wp
+spec:
+  selector:
+    app: hfc-wp
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: ClusterIP

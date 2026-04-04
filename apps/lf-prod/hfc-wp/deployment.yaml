@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hfc-wp
+  namespace: lf-prod
+  labels:
+    app: hfc-wp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hfc-wp
+  template:
+    metadata:
+      labels:
+        app: hfc-wp
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/hostname: leadsfilter-n1
+      containers:
+
+        - name: nginx
+          image: nginx:1.28
+          ports:
+            - containerPort: 80
+          startupProbe:
+            httpGet:
+              path: /wp-login.php
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: homefinanceclub.com
+            periodSeconds: 1
+            failureThreshold: 60
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/homefinanceclub.com.conf
+              subPath: homefinanceclub.com.conf
+              readOnly: true
+            - name: www
+              mountPath: /var/www/html
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/nginx/fcgi
+
+        - name: php-fpm
+          image: wordpress:6-fpm
+          volumeMounts:
+            - name: www
+              mountPath: /var/www/html
+            - name: cache
+              mountPath: /var/cache/nginx/fcgi
+
+        - name: mariadb
+          image: mariadb:10.11
+          envFrom:
+            - secretRef:
+                name: hfc-wp-mysql
+                # Expected keys in secret:
+                #   MYSQL_ROOT_PASSWORD
+                #   MYSQL_DATABASE
+                #   MYSQL_USER
+                #   MYSQL_PASSWORD
+          volumeMounts:
+            - name: mysql
+              mountPath: /var/lib/mysql
+
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: hfc-wp-nginx-config
+
+        - name: www
+          hostPath:
+            path: /data/lf-prod/hfc-wp/www
+            type: Directory
+
+        - name: mysql
+          hostPath:
+            path: /data/lf-prod/hfc-wp/mysql
+            type: Directory
+
+        - name: cache
+          emptyDir: {}

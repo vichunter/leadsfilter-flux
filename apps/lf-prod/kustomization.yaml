@@ -23,4 +23,5 @@ resources:
   - serviceroom-flower/
   - serviceroom-rabbitmq/
   - serviceroom-worker/
+  - hfc-wp/
   - ingress/

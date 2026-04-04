@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hfc-wp-nginx-config
+  namespace: lf-prod
+data:
+  nginx.conf: |
+    user www-data www-data;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log;
+    pid /run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile            on;
+        tcp_nopush          on;
+        tcp_nodelay         on;
+        keepalive_timeout   65;
+        types_hash_max_size 2048;
+
+        server_tokens off;
+
+        include             /etc/nginx/mime.types;
+        default_type        application/octet-stream;
+
+        include /etc/nginx/conf.d/*.conf;
+
+        server {
+            listen       80 default_server;
+            server_name  _;
+
+            location / {
+                default_type "text/plain";
+                return 403 "403 Forbidden";
+            }
+        }
+    }
+
+  homefinanceclub.com.conf: |
+    fastcgi_cache_path /var/cache/nginx/fcgi levels=1:2 keys_zone=hfc-wp:4m max_size=200m inactive=24h use_temp_path=off;
+
+    server {
+        listen 80;
+        server_name homefinanceclub.com;
+
+        access_log /var/log/nginx/homefinanceclub.com-access.log combined;
+        error_log /var/log/nginx/homefinanceclub.com-error.log warn;
+
+        root /var/www/html;
+        index index.php;
+
+        gunzip on;
+
+        gzip on;
+        gzip_comp_level 3;
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript;
+        gzip_vary on;
+        gzip_proxied any;
+
+        # --- FastCGI cache ---
+
+        fastcgi_cache hfc-wp;
+        fastcgi_cache_key "$scheme$request_method$host$request_uri";
+        fastcgi_cache_valid 200 24h;
+        fastcgi_cache_valid any 0;
+
+        set $skip_cache 0;
+
+        if ($request_method = POST) {
+            set $skip_cache 1;
+        }
+
+        if ($request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") {
+            set $skip_cache 1;
+        }
+
+        if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") {
+            set $skip_cache 1;
+        }
+
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+
+        fastcgi_hide_header Cache-Control;
+        fastcgi_hide_header X-Powered-By;
+
+        add_header X-Cached $upstream_cache_status;
+
+        # --- Rewrites from .htaccess ---
+
+        rewrite ^/(m\-[^/]+/).+ /$1 redirect;
+        rewrite ^/(.*?)/home\-purchase(/.*)?$ /$1/?wapp-start=p redirect;
+        rewrite ^/(.*?)/refinance(/.*)?$      /$1/?wapp-start=r redirect;
+        rewrite ^/(.*?)/equity(/.*)?$         /$1/?wapp-start=e redirect;
+        rewrite ^/(.*?)/reverse(/.*)?$        /$1/?wapp-start=v redirect;
+
+        # --- Locations ---
+
+        location ~* ^/wp-content/uploads/backwpup-.*/  { deny all; }
+        location ~* ^/wp-content/plugins/backwpup/.*\.php$ { deny all; }
+        location = /wp-content/uploads/wp-file-manager-pro/fm_backup/ { deny all; }
+        location ~* ^/wp-content/htaccess-editor-backups/ { deny all; }
+
+        location ~* ^/wp-content/uploads/elementor/custom-icons/ {
+            autoindex off;
+            add_header Content-Disposition attachment;
+        }
+
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif|mp4|webm)$ {
+            expires max;
+            access_log off;
+            try_files $uri =404;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.php?$args;
+        }
+
+        location ~ \.php$ {
+            try_files $uri =404;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param HTTPS $http_x_forwarded_proto;
+            fastcgi_param HTTP_AUTHORIZATION $http_authorization;
+
+            fastcgi_buffers 4 128k;
+            fastcgi_buffer_size 128k;
+        }
+    }
