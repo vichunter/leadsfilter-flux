@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serviceroom-frontend
+  namespace: lf-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: serviceroom-frontend
+  template:
+    metadata:
+      labels:
+        app: serviceroom-frontend
+    spec:
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: ecr-credentials-leadsfilter
+      containers:
+        - name: serviceroom-frontend
+          image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-frontend:PLACEHOLDER # {"$imagepolicy": "flux-system:serviceroom-frontend-prod"}
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 20m
+            limits:
+              memory: 128Mi
+          ports:
+            - containerPort: 80

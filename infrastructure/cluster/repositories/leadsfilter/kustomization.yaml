@@ -6,3 +6,6 @@ resources:
   - serviceroom-backend-ir.yaml
   - serviceroom-backend-prod-ip.yaml
   - serviceroom-backend-iua.yaml
+  - serviceroom-frontend-ir.yaml
+  - serviceroom-frontend-prod-ip.yaml
+  - serviceroom-frontend-iua.yaml

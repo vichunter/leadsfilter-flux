@@ -1,0 +1,10 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: serviceroom-frontend
+  namespace: flux-system
+spec:
+  image: 925375122018.dkr.ecr.us-east-2.amazonaws.com/serviceroom-frontend
+  interval: 5m
+  secretRef:
+    name: ecr-credentials-leadsfilter

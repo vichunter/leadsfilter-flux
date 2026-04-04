@@ -22,6 +22,7 @@ resources:
   - serviceroom-beat/
   - serviceroom-flower/
   - serviceroom-rabbitmq/
+  - serviceroom-frontend/
   - serviceroom-worker/
   - hfc-wp/
   - ingress/
