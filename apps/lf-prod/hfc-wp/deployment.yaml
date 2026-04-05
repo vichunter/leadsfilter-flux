@@ -60,6 +60,11 @@ spec:
 
         - name: php-fpm
           image: wordpress:6-fpm
+          env:
+            - name: WP_REDIS_HOST
+              value: "127.0.0.1"
+            - name: WP_REDIS_PORT
+              value: "6379"
           resources:
             requests:
               cpu: 50m
@@ -75,6 +80,19 @@ spec:
               mountPath: /usr/local/etc/php/conf.d/opcache-tuned.ini
               subPath: opcache.ini
               readOnly: true
+
+        - name: redis
+          image: redis:8-alpine
+          args:
+            - --maxmemory=64mb
+            - --maxmemory-policy=allkeys-lru  # evict least recently used keys when full
+            - --save ""                       # disable RDB snapshots, cache is ephemeral
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 96Mi
 
         - name: mariadb
           image: mariadb:10.11
