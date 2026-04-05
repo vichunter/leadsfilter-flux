@@ -77,7 +77,6 @@ spec:
           args:
             - --innodb-io-capacity=1000          # SSD-optimized I/O capacity (default 200 is for HDD)
             - --skip-name-resolve                # disable DNS lookup on each connection
-            - --innodb-flush-log-at-trx-commit=2 # flush log every second instead of on each commit
           resources:
             requests:
               cpu: 50m
