@@ -82,11 +82,12 @@ spec:
               readOnly: true
 
         - name: redis
-          image: redis:8-alpine
+          image: valkey/valkey:8-alpine  # open-source Redis fork, Redis-compatible
           args:
             - --maxmemory=64mb
             - --maxmemory-policy=allkeys-lru  # evict least recently used keys when full
-            - --save ""                       # disable RDB snapshots, cache is ephemeral
+            - --save
+            - ""                              # disable RDB snapshots, cache is ephemeral
           resources:
             requests:
               cpu: 10m
