@@ -71,6 +71,10 @@ spec:
               mountPath: /var/www/html
             - name: cache
               mountPath: /var/cache/nginx/fcgi
+            - name: php-config
+              mountPath: /usr/local/etc/php/conf.d/opcache-tuned.ini
+              subPath: opcache.ini
+              readOnly: true
 
         - name: mariadb
           image: mariadb:10.11
@@ -109,6 +113,10 @@ spec:
           hostPath:
             path: /data/lf-prod/hfc-wp/mysql
             type: Directory
+
+        - name: php-config
+          configMap:
+            name: hfc-wp-php-config
 
         - name: cache
           emptyDir: {}
