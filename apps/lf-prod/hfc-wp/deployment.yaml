@@ -74,6 +74,9 @@ spec:
 
         - name: mariadb
           image: mariadb:10.11
+          args:
+            - --innodb-io-capacity=1000   # SSD-optimized I/O capacity (default 200 is for HDD)
+            - --skip-name-resolve         # disable DNS lookup on each connection
           resources:
             requests:
               cpu: 50m
