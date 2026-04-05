@@ -83,23 +83,24 @@ spec:
 
         - name: valkey
           image: valkey/valkey:8-alpine  # open-source Redis fork, Redis-compatible
-          args:
-            - --maxmemory=64mb
-            - --maxmemory-policy=allkeys-lru  # evict least recently used keys when full
-            - --save
-            - ""                              # disable RDB snapshots, cache is ephemeral
+          command: ["valkey-server", "/etc/valkey/valkey.conf"]
           resources:
             requests:
               cpu: 10m
               memory: 64Mi
             limits:
               memory: 96Mi
+          volumeMounts:
+            - name: valkey-config
+              mountPath: /etc/valkey/valkey.conf
+              subPath: valkey.conf
+              readOnly: true
 
         - name: mariadb
           image: mariadb:10.11
           args:
-            - --innodb-io-capacity=1000          # SSD-optimized I/O capacity (default 200 is for HDD)
-            - --skip-name-resolve                # disable DNS lookup on each connection
+            - --innodb-io-capacity=1000   # SSD-optimized I/O capacity (default 200 is for HDD)
+            - --skip-name-resolve         # disable DNS lookup on each connection
           resources:
             requests:
               cpu: 50m
@@ -136,6 +137,10 @@ spec:
         - name: php-config
           configMap:
             name: hfc-wp-php-config
+
+        - name: valkey-config
+          configMap:
+            name: hfc-wp-valkey-config
 
         - name: cache
           emptyDir: {}
