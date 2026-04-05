@@ -81,7 +81,7 @@ spec:
               subPath: opcache.ini
               readOnly: true
 
-        - name: redis
+        - name: valkey
           image: valkey/valkey:8-alpine  # open-source Redis fork, Redis-compatible
           args:
             - --maxmemory=64mb
