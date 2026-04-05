@@ -17,6 +17,6 @@ metadata:
   namespace: lf-prod
 data:
   valkey.conf: |
-    maxmemory 64mb
+    maxmemory 32mb
     maxmemory-policy allkeys-lru
     save ""

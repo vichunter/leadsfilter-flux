@@ -89,7 +89,7 @@ spec:
               cpu: 10m
               memory: 64Mi
             limits:
-              memory: 96Mi
+              memory: 48Mi
           volumeMounts:
             - name: valkey-config
               mountPath: /etc/valkey/valkey.conf
@@ -101,7 +101,6 @@ spec:
           args:
             - --innodb-io-capacity=1000   # SSD-optimized I/O capacity (default 200 is for HDD)
             - --skip-name-resolve         # disable DNS lookup on each connection
-            - --thread-handling=pool-of-threads  # thread pool instead of one-thread-per-connection
           resources:
             requests:
               cpu: 50m
