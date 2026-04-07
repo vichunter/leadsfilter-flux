@@ -26,4 +26,4 @@ spec:
         use-gunzip: "true"
         gzip-level: "5"
         gzip-min-length: "1000"
-        gzip-types: "text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript"
+        gzip-types: "text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml image/x-icon image/bmp"
