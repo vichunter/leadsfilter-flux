@@ -41,7 +41,7 @@ kubectl rollout restart deploy/openvpn-udp -n openvpn
 
 ```bash
 kubectl exec -it deploy/openvpn-tcp -n openvpn -- bash
-easyrsa build-client-full <client-name> nopass
+easyrsa --days=3650 build-client-full <client-name> nopass
 ovpn_getclient <client-name> > /tmp/<client-name>.ovpn
 exit
 ```
@@ -51,6 +51,8 @@ Download the `.ovpn` file:
 ```powershell
 kubectl cp openvpn/<pod-name>:/tmp/<client-name>.ovpn ./<client-name>.ovpn
 ```
+
+Make sure, there is no "default-router def1" or like this in end of the `.ovpn` file.
 
 ### Set certificate expiry (default: 825 days)
 
