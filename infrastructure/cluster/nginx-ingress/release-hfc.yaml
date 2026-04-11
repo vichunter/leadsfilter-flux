@@ -21,6 +21,8 @@ spec:
       hostNetwork: true
       service:
         type: ClusterIP
+      updateStrategy:
+        type: Recreate
       ingressClassResource:
         name: nginx-hfc
         enabled: true
