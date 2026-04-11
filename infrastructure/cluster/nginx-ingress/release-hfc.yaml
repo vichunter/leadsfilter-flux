@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: nginx-ingress
+  name: nginx-ingress-hfc
   namespace: flux-system
 spec:
   interval: 1h
@@ -21,8 +21,15 @@ spec:
       hostNetwork: true
       service:
         type: ClusterIP
+      ingressClassResource:
+        name: nginx-hfc
+        enabled: true
+        default: false
+        controllerValue: "k8s.io/ingress-nginx-hfc"
+      ingressClass: nginx-hfc
+      electionID: ingress-nginx-hfc-leader
       config:
-        bind-address: "178.156.239.214"
+        bind-address: "5.161.26.66"
         use-gzip: "true"
         use-gunzip: "true"
         gzip-level: "5"
