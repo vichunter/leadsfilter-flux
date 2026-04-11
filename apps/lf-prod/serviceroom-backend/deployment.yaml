@@ -33,6 +33,8 @@ spec:
             limits:
               memory: 300Mi
           envFrom:
+            - configMapRef:
+                name: serviceroom-common
             - secretRef:
                 name: serviceroom
           ports:

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: serviceroom-common
+  namespace: lf-prod
+data:
+  TZ: "America/New_York"

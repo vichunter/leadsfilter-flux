@@ -33,5 +33,7 @@ spec:
             limits:
               memory: 256Mi
           envFrom:
+            - configMapRef:
+                name: serviceroom-common
             - secretRef:
                 name: serviceroom
