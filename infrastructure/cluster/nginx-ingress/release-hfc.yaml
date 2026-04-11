@@ -37,3 +37,10 @@ spec:
         gzip-level: "5"
         gzip-min-length: "1000"
         gzip-types: "text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml image/x-icon image/bmp"
+        server-snippet: |
+          more_set_headers "X-Request-Time: $request_time";
+          more_set_headers "X-Upstream-Connect-Time: $upstream_connect_time";
+          more_set_headers "X-Upstream-Header-Time: $upstream_header_time";
+          more_set_headers "X-Upstream-Response-Time: $upstream_response_time";
+          more_set_headers "X-Request-Id: $req_id";
+          more_set_headers "X-Served-At: $msec";
