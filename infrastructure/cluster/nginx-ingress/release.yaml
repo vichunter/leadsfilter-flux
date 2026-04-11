@@ -16,17 +16,13 @@ spec:
   targetNamespace: ingress-nginx
   install:
     createNamespace: true
-  upgrade:
-    force: true
   values:
     controller:
-      hostNetwork: true
       service:
         type: ClusterIP
-      updateStrategy:
-        type: Recreate
+        externalIPs:
+          - "178.156.239.214"
       config:
-        bind-address: "178.156.239.214"
         use-gzip: "true"
         use-gunzip: "true"
         gzip-level: "5"
