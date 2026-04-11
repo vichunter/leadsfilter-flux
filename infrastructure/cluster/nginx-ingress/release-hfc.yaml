@@ -16,6 +16,8 @@ spec:
   targetNamespace: ingress-nginx
   install:
     createNamespace: true
+  upgrade:
+    force: true
   values:
     controller:
       hostNetwork: true
