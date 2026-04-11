@@ -9,7 +9,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx-hfc
   tls:
     - hosts:
         - homefinanceclub.com
