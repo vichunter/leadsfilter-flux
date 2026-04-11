@@ -16,15 +16,8 @@ spec:
   targetNamespace: ingress-nginx
   install:
     createNamespace: true
-  upgrade:
-    force: true
   values:
     controller:
-      hostNetwork: true
-      service:
-        type: ClusterIP
-      updateStrategy:
-        type: Recreate
       ingressClassResource:
         name: nginx-hfc
         enabled: true
@@ -32,8 +25,13 @@ spec:
         controllerValue: "k8s.io/ingress-nginx-hfc"
       ingressClass: nginx-hfc
       electionID: ingress-nginx-hfc-leader
+      admissionWebhooks:
+        enabled: false
+      service:
+        type: ClusterIP
+        externalIPs:
+          - "5.161.26.66"
       config:
-        bind-address: "5.161.26.66"
         use-gzip: "true"
         use-gunzip: "true"
         gzip-level: "5"
