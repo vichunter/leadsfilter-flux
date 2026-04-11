@@ -9,6 +9,13 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-account-key
     solvers:
+      - selector:
+          dnsNames:
+            - homefinanceclub.com
+            - www.homefinanceclub.com
+        http01:
+          ingress:
+            ingressClassName: nginx-hfc
       - http01:
           ingress:
             ingressClassName: nginx
