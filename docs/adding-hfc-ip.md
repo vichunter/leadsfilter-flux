@@ -269,7 +269,63 @@ resources:
   - release-hfc.yaml
 ```
 
-## Step 6 — Move ingress resources to the new class
+## Step 6 — Teach cert-manager which controller to use per domain
+
+By default, a cert-manager `ClusterIssuer` has a single `solvers` entry
+with a hardcoded ingress class. When the ACME HTTP-01 solver creates its
+temporary ingress for a domain challenge, that ingress goes to whatever
+class is in the ClusterIssuer — regardless of which class the *real*
+Ingress for the domain uses.
+
+With two controllers on different IPs, this breaks: if the ClusterIssuer
+always puts solver ingresses on `nginx`, the solver is served from the
+primary IP, but the DNS A record for the new domain points at the
+secondary IP. Let's Encrypt fetches the challenge via DNS → it lands on
+the secondary controller → no matching solver ingress there → 404.
+Challenge hangs forever in `pending`.
+
+Fix: give the ClusterIssuer multiple solvers, selected by `dnsNames`,
+each using the correct class:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ops@example.com
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+      - selector:
+          dnsNames:
+            - homefinanceclub.com
+            - www.homefinanceclub.com
+        http01:
+          ingress:
+            ingressClassName: nginx-hfc
+      - http01:
+          ingress:
+            ingressClassName: nginx
+```
+
+The first solver is the specific one — its `selector.dnsNames` makes it
+match only challenges for the listed hosts, and it points the solver at
+`nginx-hfc`. The second solver has no selector — it is the default
+fallback for every other domain and keeps using `nginx`. cert-manager
+picks the most specific matching solver, so the ordering of the two
+blocks does not matter, but putting the specific one first reads better.
+
+**Important: list every host that appears in the matching Ingress's
+`tls.hosts`.** If the Ingress TLS section covers `example.com` and
+`www.example.com`, the ClusterIssuer selector must include both — cert-manager
+issues one challenge per host, and any host missing from the selector
+falls back to the default solver (wrong class). List the selector hosts
+in sync with what the Ingress requests.
+
+## Step 7 — Move ingress resources to the new class
 
 For each domain that must only be served via the new IP, change its
 `Ingress` to reference the new class:
@@ -422,6 +478,75 @@ installed, so subsequent reconciles try to patch a non-existent object.
 **Fix**: delete the Helm release Secret in `flux-system` (look for
 `sh.helm.release.v1.<name>.v<revision>` entries) and let Flux reinstall from
 scratch on the next reconcile.
+
+### cert-manager challenges stuck in `pending` after splitting controllers
+
+**Symptom**: after moving a domain's Ingress to the new `nginx-hfc` class
+and pointing DNS at the secondary IP, the `Certificate` stayed `READY:
+False`. `k0s kubectl -n <ns> get order,challenge` showed Orders and
+Challenges in `pending` state for days. The `cm-acme-http-solver-*`
+Ingresses were still there — but with `CLASS: nginx` and `ADDRESS` equal
+to the primary controller's ClusterIP.
+
+**Cause**: two compounding issues.
+
+1. **ClusterIssuer hardcoded the solver class.** The `letsencrypt`
+   ClusterIssuer had a single solver with `http01.ingress.ingressClassName:
+   nginx`, so cert-manager created every solver ingress on the primary
+   controller regardless of which real ingress was asking for the cert.
+   Even though DNS now pointed to the secondary IP, Let's Encrypt's HTTP-01
+   probe landed on the secondary controller, which had no solver ingress,
+   and returned 404.
+2. **Updating the ClusterIssuer did not retroactively rewrite the
+   existing Order.** cert-manager only reads Issuer config when it
+   *creates* a new Order. The stuck Order was created six days earlier,
+   under the old single-solver config, so its Challenges' solver
+   ingresses were frozen in the wrong class. No amount of waiting would
+   fix them.
+
+**Fix**: two steps, in order.
+
+1. Update the ClusterIssuer to have a per-domain solver — see Step 6.
+2. **Delete the stuck Order** to force cert-manager to create a fresh
+   one that reads the new Issuer config:
+
+   ```bash
+   k0s kubectl -n <ns> delete order <order-name>
+   ```
+
+   The deletion cascades to the Challenges, solver Ingresses, Services,
+   and Pods (via owner references). cert-manager then sees the
+   `CertificateRequest` with no live Order and immediately creates a new
+   one. The new solver ingresses come up with the correct class, Let's
+   Encrypt validates within a minute or two, and the Certificate flips
+   to `READY: True`.
+
+You do not need to restart the solver pods, touch cert-manager, or
+reissue the Certificate resource. Deleting the Order is the single lever.
+
+### Missing DNS record for `www.` stalls HTTP-01 challenge silently
+
+**Symptom**: after fixing the ClusterIssuer and recreating the Order,
+one Challenge still stayed `pending`. `dig +short www.example.com`
+returned nothing.
+
+**Cause**: the Ingress's `tls.hosts` listed both `example.com` and
+`www.example.com`, so cert-manager issued two Challenges — one per host.
+DNS only existed for the apex. Let's Encrypt could not even resolve the
+`www` host to make the HTTP request, so that Challenge hung indefinitely
+and the parent Order never progressed.
+
+**Fix**: add DNS for every host in `tls.hosts` before asking cert-manager
+to issue the cert. The cleanest option is a CNAME from `www` to the
+apex — single source of truth, survives future IP changes:
+
+```
+www.example.com.   CNAME   example.com.
+```
+
+After DNS propagates (`dig +short www.example.com` should return the
+chain), delete the stuck Order again to force a fresh cycle. The new
+Challenges will validate both hosts, and the Certificate becomes Ready.
 
 ### Unrelated but same session — `mcedit` replaces spaces with tabs in YAML
 
