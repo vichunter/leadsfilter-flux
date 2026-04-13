@@ -12,5 +12,7 @@ spec:
     - filters:
         - type: RequestRedirect
           requestRedirect:
+            scheme: https
             hostname: leadsfilter.com
+            port: 443
             statusCode: 301
