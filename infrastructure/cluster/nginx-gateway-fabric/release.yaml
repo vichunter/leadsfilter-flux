@@ -19,5 +19,10 @@ spec:
   values:
     gatewayAPI:
       install: false
+    nginx:
+      service:
+        type: ClusterIP
+        externalIPs:
+          - "178.156.239.214"
     nginxGateway:
       gatewayClassName: nginx
