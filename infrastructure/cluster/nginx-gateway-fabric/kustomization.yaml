@@ -4,3 +4,5 @@ resources:
   - source.yaml
   - release.yaml
   - release-hfc.yaml
+  - agent-tls.yaml
+  - agent-tls-hfc.yaml

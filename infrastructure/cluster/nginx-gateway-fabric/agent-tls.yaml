@@ -1,0 +1,44 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ngf-selfsigned
+  namespace: nginx-gateway
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ngf-ca
+  namespace: nginx-gateway
+spec:
+  isCA: true
+  commonName: nginx-gateway
+  secretName: ngf-ca-secret
+  issuerRef:
+    name: ngf-selfsigned
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ngf-ca-issuer
+  namespace: nginx-gateway
+spec:
+  ca:
+    secretName: ngf-ca-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: agent-tls
+  namespace: nginx-gateway
+spec:
+  secretName: agent-tls
+  commonName: nginx-gateway
+  dnsNames:
+    - "*.cluster.local"
+  issuerRef:
+    name: ngf-ca-issuer
+    kind: Issuer
