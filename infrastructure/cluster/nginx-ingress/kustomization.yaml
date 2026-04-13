@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - leadsfilter
-  - homefinanceclub
-  - snippets-policy.yaml
+  - source.yaml
+  - release.yaml
+  - release-hfc.yaml
