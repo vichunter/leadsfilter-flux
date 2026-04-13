@@ -30,3 +30,4 @@ spec:
                   - "5.161.26.66"
     nginxGateway:
       gatewayClassName: nginx-hfc
+      gatewayControllerName: gateway.nginx.org/nginx-gateway-controller-hfc
