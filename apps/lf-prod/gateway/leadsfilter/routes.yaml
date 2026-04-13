@@ -1,0 +1,74 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: leadsfilter
+  namespace: lf-prod
+spec:
+  parentRefs:
+    - name: leadsfilter
+  hostnames:
+    - leadsfilter.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /admin2
+      backendRefs:
+        - name: leadstore-admin
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      backendRefs:
+        - name: leadstore-api
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /portal
+      backendRefs:
+        - name: leadstore-portal
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /shared
+      backendRefs:
+        - name: leadstore-shared
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /serviceroom/admin
+      backendRefs:
+        - name: serviceroom-backend
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /serviceroom/api
+      backendRefs:
+        - name: serviceroom-backend
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /serviceroom
+      backendRefs:
+        - name: serviceroom-frontend
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /corp
+      backendRefs:
+        - name: leadsfilter-corp-wp
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: leadstore-landing
+          port: 80

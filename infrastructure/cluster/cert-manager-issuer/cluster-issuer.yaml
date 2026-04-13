@@ -14,8 +14,12 @@ spec:
             - homefinanceclub.com
             - www.homefinanceclub.com
         http01:
-          ingress:
-            ingressClassName: nginx-hfc
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: homefinanceclub
+                namespace: lf-prod
       - http01:
-          ingress:
-            ingressClassName: nginx
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: leadsfilter
+                namespace: lf-prod

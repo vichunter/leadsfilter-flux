@@ -26,4 +26,4 @@ resources:
   - serviceroom-frontend/
   - serviceroom-worker/
   - hfc-wp/
-  - ingress/
+  - gateway/

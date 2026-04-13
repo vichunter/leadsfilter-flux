@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: leadsfilter
+  namespace: lf-prod
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  gatewayClassName: nginx
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: leadsfilter.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: leadsfilter-tls
+    - name: https-www
+      port: 443
+      protocol: HTTPS
+      hostname: www.leadsfilter.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: leadsfilter-tls

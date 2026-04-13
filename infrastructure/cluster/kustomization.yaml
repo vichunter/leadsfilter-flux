@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - capacitor/
   - cert-manager/
-  - nginx-ingress/
+  - nginx-gateway-fabric/
   - reflector/
   - repositories/
   - openvpn/

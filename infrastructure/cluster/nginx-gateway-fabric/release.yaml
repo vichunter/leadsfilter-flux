@@ -1,0 +1,34 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nginx-gateway-fabric
+  namespace: flux-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: nginx-gateway-fabric
+      version: "2.5.1"
+      sourceRef:
+        kind: HelmRepository
+        name: nginx-gateway-fabric
+        namespace: flux-system
+  targetNamespace: nginx-gateway
+  install:
+    createNamespace: true
+  values:
+    gatewayAPI:
+      install: true
+    nginx:
+      config:
+        - http:
+            gzip: "on"
+            gzip_comp_level: "5"
+            gzip_min_length: "1000"
+            gzip_types: "text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml image/x-icon image/bmp"
+    nginxGateway:
+      gatewayClassName: nginx
+      service:
+        type: ClusterIP
+        externalIPs:
+          - "178.156.239.214"

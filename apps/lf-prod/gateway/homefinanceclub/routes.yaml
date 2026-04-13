@@ -1,0 +1,46 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: homefinanceclub
+  namespace: lf-prod
+spec:
+  parentRefs:
+    - name: homefinanceclub
+  hostnames:
+    - homefinanceclub.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /serviceroom/api
+      backendRefs:
+        - name: serviceroom-backend
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /serviceroom
+      backendRefs:
+        - name: serviceroom-frontend
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      backendRefs:
+        - name: leadapp-api
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /wapp
+      backendRefs:
+        - name: leadapp-widget
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: hfc-wp
+          port: 80

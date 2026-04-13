@@ -1,0 +1,22 @@
+apiVersion: gateway.nginx.org/v1alpha1
+kind: SnippetsPolicy
+metadata:
+  name: custom-headers
+  namespace: lf-prod
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: leadsfilter
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: homefinanceclub
+  snippets:
+    - context: http.server.location
+      value: |
+        add_header X-Request-Time $request_time;
+        add_header X-Upstream-Connect-Time $upstream_connect_time;
+        add_header X-Upstream-Header-Time $upstream_header_time;
+        add_header X-Request-Id $request_id;
+        add_header X-Served-At $msec;
+        add_header X-Served-At-Iso $time_iso8601;
