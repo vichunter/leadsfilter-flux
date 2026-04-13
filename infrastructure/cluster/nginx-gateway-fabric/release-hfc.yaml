@@ -13,7 +13,7 @@ spec:
         kind: HelmRepository
         name: nginx-gateway-fabric
         namespace: flux-system
-  targetNamespace: nginx-gateway
+  targetNamespace: nginx-gateway-hfc
   install:
     createNamespace: true
   values:
