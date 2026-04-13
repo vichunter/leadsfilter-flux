@@ -22,10 +22,5 @@ spec:
     nginx:
       config:
         serverTokens: "off"
-        kubernetes:
-          service:
-            type: ClusterIP
-            externalIPs:
-              - "178.156.239.214"
     nginxGateway:
       gatewayClassName: nginx
