@@ -20,7 +20,7 @@ spec:
     gatewayAPI:
       install: false
     certGenerator:
-      enabled: false
+      enable: false
     nginx:
       service:
         type: ClusterIP
