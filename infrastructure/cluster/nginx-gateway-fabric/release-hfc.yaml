@@ -22,7 +22,11 @@ spec:
     nginx:
       service:
         type: ClusterIP
-        externalIPs:
-          - "5.161.26.66"
+        patches:
+          - type: StrategicMerge
+            value:
+              spec:
+                externalIPs:
+                  - "5.161.26.66"
     nginxGateway:
       gatewayClassName: nginx-hfc

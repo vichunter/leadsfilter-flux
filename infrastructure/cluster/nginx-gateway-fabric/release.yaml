@@ -22,7 +22,11 @@ spec:
     nginx:
       service:
         type: ClusterIP
-        externalIPs:
-          - "178.156.239.214"
+        patches:
+          - type: StrategicMerge
+            value:
+              spec:
+                externalIPs:
+                  - "178.156.239.214"
     nginxGateway:
       gatewayClassName: nginx
