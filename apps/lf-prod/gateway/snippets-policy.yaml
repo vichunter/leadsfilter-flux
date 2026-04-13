@@ -12,6 +12,12 @@ spec:
       kind: Gateway
       name: homefinanceclub
   snippets:
+    - context: http
+      value: |
+        gzip on;
+        gzip_comp_level 5;
+        gzip_min_length 1000;
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml image/x-icon image/bmp;
     - context: http.server.location
       value: |
         add_header X-Request-Time $request_time;
