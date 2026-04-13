@@ -18,7 +18,7 @@ spec:
     createNamespace: true
   values:
     gatewayAPI:
-      install: true
+      install: false
     nginx:
       config:
         - http:
