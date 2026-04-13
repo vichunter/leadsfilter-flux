@@ -6,5 +6,6 @@ resources:
   - apps-lf-prod.yaml
   - infra-lf-stage.yaml
   - infra-lf-prod.yaml
+  - infra-gateway-api-crds.yaml
   - infra-cluster.yaml
   - infra-cert-manager-issuer.yaml
