@@ -19,8 +19,6 @@ spec:
   values:
     gatewayAPI:
       install: false
-    certGenerator:
-      agentTLSSecretName: agent-tls
     nginx:
       service:
         type: ClusterIP
