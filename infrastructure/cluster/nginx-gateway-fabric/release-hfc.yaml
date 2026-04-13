@@ -19,9 +19,13 @@ spec:
   values:
     gatewayAPI:
       install: false
+    nginx:
+      config:
+        serverTokens: "off"
+        kubernetes:
+          service:
+            type: ClusterIP
+            externalIPs:
+              - "5.161.26.66"
     nginxGateway:
       gatewayClassName: nginx-hfc
-      service:
-        type: ClusterIP
-        externalIPs:
-          - "5.161.26.66"
