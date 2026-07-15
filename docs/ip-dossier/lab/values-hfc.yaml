@@ -1,0 +1,77 @@
+# HAProxy IC — homefinanceclub instance (5.161.26.66), chart kubernetes-ingress 1.52.1.
+#
+# RUNTIME-VERIFIED 2026-07-15 in a kind replica (see ../09-runtime-verification.md).
+# This supersedes 07-artifacts.md §2, which was rendered but never run and is
+# missing the five extraArgs below — without them the two instances silently
+# share listeners via SO_REUSEPORT.
+#
+# Replica IP mapping used during verification: 5.161.26.66 -> 192.168.160.91.
+controller:
+  kind: DaemonSet
+  dnsPolicy: ClusterFirstWithHostNet
+  unprivileged: false                 # image has no USER -> root -> binds 80/443. NEVER allowPrivilegedPorts (R-02)
+  containerPort:
+    http: 80                          # chart default 8080 feeds --http-bind-port; 80 is the real bind
+    https: 443
+    stat: 1024                        # declaration only — the bind comes from --stats-bind-port below
+    admin: 6060                       # declaration only — no listener at all once --controller-port=0
+  prometheus:
+    enabled: false
+  pprof:
+    enabled: false
+  daemonset:
+    useHostNetwork: true              # the key is here, NOT controller.hostNetwork (R-04)
+    useHostPort: true
+    hostIP: 5.161.26.66               # scheduler (hostIP,port) tuples only (#117689). Sets no bind (R-01)
+    hostPorts:
+      http: 80
+      https: 443
+      stat: 1024
+  nodeSelector:
+    kubernetes.io/hostname: leadsfilter-n1
+  ingressClass: haproxy-hfc
+  ingressClassResource:
+    name: haproxy-hfc
+    default: false                    # no `enabled` key exists here (R-06)
+  extraArgs:
+    # --ipv4-bind-address scopes ONLY the http/https/quic frontends. Verified by
+    # reading pkg/controller/handler.go and by ss on a live node.
+    - "--ipv4-bind-address=5.161.26.66"
+    - "--disable-ipv6"                # else :::80 collides and, with bindv6only=0, also accepts IPv4
+    # The five listeners --ipv4-bind-address does NOT scope. Each needs a port the
+    # other instance does not use. haproxy binds with SO_REUSEPORT, so a clash does
+    # NOT raise EADDRINUSE — both bind and the kernel picks an answerer at random.
+    - "--healthz-bind-port=1042"      # haproxy frontend, hardcoded 0.0.0.0 (controller.go:245)
+    - "--stats-bind-port=1024"        # haproxy frontend, hardcoded *  (controller.go:267). Port 0 is INVALID and wedges the instance
+    - "--default-backend-port=6061"   # Go listener, hardcoded :PORT (builder.go:288)
+    - "--controller-port=0"           # Go listener (builder.go:165). 0 disables it outright — one less public port
+    - "--localpeer-port=10000"        # haproxy peers, binds <nodeIP>:PORT — in prod that is a PUBLIC address
+  publishService:
+    enabled: false                    # default true; would point --publish-service at the disabled Service
+  service:
+    enabled: false                    # isolation is the bind, not kube-proxy. NEVER add externalIPs
+    enablePorts:
+      quic: false                     # drops the --quic-* args, but the quic4@<ip>:443 bind REMAINS (see 09 §R-16)
+  # The probes must follow --healthz-bind-port. The chart default is 1042 on both
+  # instances; leave it and the main instance probes hfc's listener.
+  livenessProbe:
+    httpGet: { path: /healthz, port: 1042, scheme: HTTP }
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet: { path: /healthz, port: 1042, scheme: HTTP }
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    httpGet: { path: /healthz, port: 1042, scheme: HTTP }
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 30

@@ -1,0 +1,70 @@
+# HAProxy IC — leadsfilter instance (178.156.239.214), chart kubernetes-ingress 1.52.1.
+#
+# RUNTIME-VERIFIED 2026-07-15 in a kind replica (see ../09-runtime-verification.md).
+# Mirror of values-hfc.yaml. EVERY port below differs from hfc's on purpose: the
+# aux listeners are not scoped by --ipv4-bind-address, so identical ports would
+# silently share a socket via SO_REUSEPORT rather than fail loudly.
+#
+# Replica IP mapping used during verification: 178.156.239.214 -> 192.168.160.90.
+controller:
+  kind: DaemonSet
+  dnsPolicy: ClusterFirstWithHostNet
+  unprivileged: false
+  containerPort:
+    http: 80
+    https: 443
+    stat: 1026                        # declaration only — real bind is --stats-bind-port
+    admin: 6060                       # declaration only — no listener once --controller-port=0
+  prometheus:
+    enabled: false
+  pprof:
+    enabled: false
+  daemonset:
+    useHostNetwork: true
+    useHostPort: true
+    hostIP: 178.156.239.214           # scheduler tuples only (#117689)
+    hostPorts:
+      http: 80
+      https: 443
+      stat: 1026
+  nodeSelector:
+    kubernetes.io/hostname: leadsfilter-n1
+  ingressClass: haproxy
+  ingressClassResource:
+    name: haproxy
+    default: false
+  extraArgs:
+    - "--ipv4-bind-address=178.156.239.214"
+    - "--disable-ipv6"
+    - "--healthz-bind-port=1043"      # hfc uses 1042
+    - "--stats-bind-port=1026"        # hfc uses 1024
+    - "--default-backend-port=6063"   # hfc uses 6061
+    - "--controller-port=0"
+    - "--localpeer-port=10001"        # hfc uses 10000
+  publishService:
+    enabled: false
+  service:
+    enabled: false
+    enablePorts:
+      quic: false
+  livenessProbe:
+    httpGet: { path: /healthz, port: 1043, scheme: HTTP }
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet: { path: /healthz, port: 1043, scheme: HTTP }
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    httpGet: { path: /healthz, port: 1043, scheme: HTTP }
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 30

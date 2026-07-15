@@ -1,0 +1,9 @@
+# Replica of the leadsfilter topology: ONE node, two "public" IPs on eth0.
+# Prod is k0s v1.35.2 / kube-router; kind gives k8s v1.35.1 / kindnet. The
+# hostNetwork bind + hostPort scheduler mechanics (#117689) are stock upstream,
+# so they reproduce faithfully; CNI choice is irrelevant to a hostNetwork bind.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: ipfix
+nodes:
+  - role: control-plane
