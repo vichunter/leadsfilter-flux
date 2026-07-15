@@ -7,6 +7,39 @@
 #
 # Replica IP mapping used during verification: 5.161.26.66 -> 192.168.160.91.
 controller:
+  # ┌───────────────────────────────────────────────────────────────────────┐
+  # │ VERSION PIN — read UPGRADING.md before touching this.                 │
+  # └───────────────────────────────────────────────────────────────────────┘
+  # Pinned: chart 1.52.1 (in the HelmRelease) -> controller 3.2.12 -> HAProxy 3.2.x.
+  #
+  # WHY THE IMAGE IS PINNED SEPARATELY: the chart renders
+  #   image: "{{ .image.repository }}:{{ .image.tag | default .Chart.AppVersion }}"
+  # so an empty tag silently follows the chart's appVersion — bump the chart and
+  # you have bumped the controller binary without saying so. The chart has no
+  # digest field at all; `repository` ending in `@sha256` + the digest as `tag`
+  # is the only way to express one, and it IS enforced (a wrong digest gives
+  # ErrImagePull — verified).
+  #
+  # sha256:3cdf2bb2... is the multi-arch INDEX digest of tag 3.2.12
+  # (2026-07-03); kubelet resolves it to the linux/amd64 manifest
+  # sha256:1ceabb4c... Verify with:
+  #   kubectl -n haproxy-ingress get pod -l app.kubernetes.io/instance=haproxy-ingress-hfc \
+  #     -o jsonpath='{.items[0].status.containerStatuses[0].imageID}'
+  #
+  # WHY NOT TO BUMP CASUALLY: this configuration leans on FIVE behaviours that
+  # are undocumented or contradicted by the vendor's own docs. An upgrade can
+  # revoke any of them silently — and the two worst failures here are silent by
+  # nature (SO_REUSEPORT shares a port instead of erroring; Helm drops unknown
+  # keys without a word). The listed dependencies and the exact re-verification
+  # steps are in UPGRADING.md.
+  #
+  # IF YOU DO BUMP: `./verify.sh` with the new version FIRST. It is offline,
+  # takes ~5 minutes, touches no production, and asserts every one of those
+  # five behaviours. Do not hand-check — the checks exist because hand-checking
+  # missed them repeatedly (see ../03-refuted.md).
+  image:
+    repository: docker.io/haproxytech/kubernetes-ingress@sha256
+    tag: "3cdf2bb20dfb6cf31993df4ffa68e7c947f6119e98ad6982bfff6ee091c8646d"
   kind: DaemonSet
   dnsPolicy: ClusterFirstWithHostNet
   unprivileged: false                 # image has no USER -> root -> binds 80/443. NEVER allowPrivilegedPorts (R-02)

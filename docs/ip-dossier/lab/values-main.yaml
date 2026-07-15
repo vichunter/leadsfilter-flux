@@ -7,6 +7,13 @@
 #
 # Replica IP mapping used during verification: 178.156.239.214 -> 192.168.160.90.
 controller:
+  # VERSION PIN — see the long comment in values-hfc.yaml and read UPGRADING.md.
+  # Both instances MUST run the identical image: they share a host netns and a
+  # port map, and the whole no-collision argument assumes one set of listener
+  # defaults. Never bump one instance alone.
+  image:
+    repository: docker.io/haproxytech/kubernetes-ingress@sha256
+    tag: "3cdf2bb20dfb6cf31993df4ffa68e7c947f6119e98ad6982bfff6ee091c8646d"
   kind: DaemonSet
   dnsPolicy: ClusterFirstWithHostNet
   unprivileged: false

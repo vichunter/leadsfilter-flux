@@ -5,9 +5,16 @@ tested **without touching production**. Built 2026-07-15; it is what produced
 `../09-runtime-verification.md`.
 
 ```bash
-./verify.sh                      # ~5 min, needs docker + curl, downloads helm/kubectl/kind into ./bin
-kind delete cluster --name ipfix # tear down
+./verify.sh                                        # ~5 min, needs docker + curl
+CHART_VERSION=1.53.0 IMAGE_PIN=3.3.0 ./verify.sh   # gate an upgrade candidate
+kind delete cluster --name ipfix                   # tear down
 ```
+
+**It is also the upgrade gate.** This setup depends on five behaviours the vendor
+does not document (or has an open bug for), and the worst failures here are
+silent. Before bumping the chart or the image, read **`UPGRADING.md`** and run
+this — it exits non-zero on any regression, and it is known to *catch* one, not
+just to print PASS.
 
 ## What it builds
 
@@ -32,10 +39,11 @@ binds in the host netns, and the `hostPort` defaulter (#117689) is stock upstrea
 
 | File | What |
 |---|---|
-| `values-hfc.yaml` / `values-main.yaml` | **The deliverable.** Runtime-verified values, with the real prod IPs. `verify.sh` rewrites the IPs for the replica; use these as-is for prod. |
+| `values-hfc.yaml` / `values-main.yaml` | **The deliverable.** Runtime-verified values with the real prod IPs and the image pinned by digest. `verify.sh` rewrites the IPs for the replica; use these as-is for prod. |
+| **`UPGRADING.md`** | **Read before any version bump.** What is pinned and why, the five undocumented behaviours everything leans on, and the bump procedure. |
 | `kind-cfg.yaml` | the one-node cluster |
 | `ingress-demo.yaml` | stub backends, the two brand Ingresses, the hand-authored `www` redirect, and a cert-manager-shaped ACME solver Ingress |
-| `verify.sh` | builds it and asserts every claim in `../09-runtime-verification.md` |
+| `verify.sh` | builds it, then runs 23 assertions (A1–A10). Doubles as the upgrade gate. Tooling versions are pinned inside it, so the harness cannot drift under the thing it measures. |
 
 ## What it asserts
 
