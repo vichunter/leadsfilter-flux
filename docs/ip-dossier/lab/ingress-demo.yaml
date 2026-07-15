@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: demo }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: hfc-app, namespace: demo }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: hfc-app } }
+  template:
+    metadata: { labels: { app: hfc-app } }
+    spec:
+      containers:
+        - name: whoami
+          image: traefik/whoami:v1.10.2
+          ports: [{ containerPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: hfc-app, namespace: demo }
+spec:
+  selector: { app: hfc-app }
+  ports: [{ port: 80, targetPort: 80 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: lf-app, namespace: demo }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: lf-app } }
+  template:
+    metadata: { labels: { app: lf-app } }
+    spec:
+      containers:
+        - name: whoami
+          image: traefik/whoami:v1.10.2
+          ports: [{ containerPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: lf-app, namespace: demo }
+spec:
+  selector: { app: lf-app }
+  ports: [{ port: 80, targetPort: 80 }]
+---
+# Mirrors apps/lf-prod/ingress/*.yaml, translated to haproxytech per the plan:
+#   ssl-redirect -> haproxy.org/ssl-redirect (default is FALSE -> must be explicit, MEDIUM 7)
+#   use-regex    -> dropped, Prefix = path_beg (MEDIUM 11)
+#   from-to-www-redirect -> hand-authored www Ingress (HIGH 5 / O-1)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homefinanceclub
+  namespace: demo
+  annotations:
+    haproxy.org/ssl-redirect: "true"
+    haproxy.org/ssl-redirect-code: "301"
+    haproxy.org/ssl-redirect-port: "443"
+spec:
+  ingressClassName: haproxy-hfc
+  rules:
+    - host: homefinanceclub.com
+      http:
+        paths:
+          - { path: /serviceroom/api/, pathType: Prefix, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+          - { path: /serviceroom/,     pathType: Prefix, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+          - { path: /api/,             pathType: Prefix, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+          - { path: /wapp/,            pathType: Prefix, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+          - { path: /,                 pathType: Prefix, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+---
+# The hand-authored www->apex redirect. THIS is the H5 landmine under test.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homefinanceclub-www
+  namespace: demo
+  annotations:
+    # The https:// prefix is UNDOCUMENTED but shipped (commit 9338c489, 2024-02-19).
+    # Without it the redirect emits http:// even from the HTTPS frontend. Do NOT add :443.
+    haproxy.org/request-redirect: "https://homefinanceclub.com"
+    haproxy.org/request-redirect-code: "301"
+spec:
+  ingressClassName: haproxy-hfc
+  rules:
+    - host: www.homefinanceclub.com
+      http:
+        paths:
+          - { path: /, pathType: Prefix, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: leadsfilter
+  namespace: demo
+  annotations:
+    haproxy.org/ssl-redirect: "true"
+    haproxy.org/ssl-redirect-code: "301"
+    haproxy.org/ssl-redirect-port: "443"
+spec:
+  ingressClassName: haproxy
+  rules:
+    - host: leadsfilter.com
+      http:
+        paths:
+          - { path: /admin2,           pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+          - { path: /api,              pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+          - { path: /serviceroom/admin, pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+          - { path: /serviceroom/api,  pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+          - { path: /serviceroom,      pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+          - { path: /corp,             pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+          - { path: /,                 pathType: Prefix, backend: { service: { name: lf-app, port: { number: 80 } } } }
+---
+# This is the shape cert-manager's HTTP-01 solver Ingress takes: one Exact path
+# per challenge token, same class as the domain's Ingress.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cm-solver-hfc
+  namespace: demo
+spec:
+  ingressClassName: haproxy-hfc
+  rules:
+    - host: homefinanceclub.com
+      http:
+        paths:
+          - { path: /.well-known/acme-challenge/probe, pathType: Exact, backend: { service: { name: hfc-app, port: { number: 80 } } } }
+    - host: www.homefinanceclub.com
+      http:
+        paths:
+          - { path: /.well-known/acme-challenge/probe, pathType: Exact, backend: { service: { name: hfc-app, port: { number: 80 } } } }
