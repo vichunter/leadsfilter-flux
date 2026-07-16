@@ -1,5 +1,56 @@
 # IP dossier — index
 
+# 🟢 SOLVED, 2026-07-16 — and not by anything this dossier proposed. Read this box before anything else.
+
+**The real client IP reaches the apps. The fix was two lines, and no migration happened.**
+
+```yaml
+# infrastructure/cluster/nginx-ingress/release.yaml and release-hfc.yaml
+      service:
+        type: ClusterIP
+        externalIPs: [...]
+        externalTrafficPolicy: Local     # <- this
+```
+Merged and live on `master` (`1cd48d2`). No new component, no controller swap, no edge, no PROXY protocol, no firewall change, no maintenance window, **no pod restart** — the field only rewrites kube-proxy's iptables chain for the externalIP, so the controllers never moved (`RESTARTS 0`, `AGE 94d` through the change).
+
+**→ The one entry that matters is `03-refuted.md` **R-23**.** Reproduce it in ~2 minutes with `lab-aprime/etp-local-test.sh`.
+
+### 🔴 Most of this dossier argues that the above is impossible. It was wrong, and here is exactly how
+
+`01-timeline.md` §2.2 said — marked **✅ VERIFIED** — *"that field only takes effect for `type: NodePort`/`LoadBalancer`; the Services here are `ClusterIP` with `externalIPs`, so the field is ignored."* That sentence is the **premise of every plan in this repo**, and it was carried into `08-decisions.md` as rejected and into `04-options.md` as *"why the current topology can never work"*.
+
+**Its basis was reading a docs page and two GitHub issues. Nobody ever ran it.** Measured:
+
+| policy | what the pod sees |
+|---|---|
+| unset (as shipped for months) / `Cluster` | `10.244.0.1` — the kube-bridge |
+| **`Local`** | **the client** |
+
+Only the policy field changes between those lines. **The problem was real** — the IP genuinely was masked. **Only the claimed impossibility of fixing it cheaply was false.**
+
+And the two issues the dossier leaned on, once opened rather than cited:
+- **ingress-nginx#9749** — a *different hop*. Their client IP **did** reach the controller; the pod *behind* it saw the proxy's address, which is how a reverse proxy works. Their setup was NodePort + hostNetwork + HAProxy on 4 nodes.
+- **kubernetes#97073** — exactly our shape, and an **IPVS-only** bug. Its reporter states iptables is correct. This node runs `mode: "iptables"` (read off the node, not assumed).
+
+**The lesson, and it is the third instance in this project:** a claim died because nobody opened the artifact. R-16 (a one-letter typo — `--stat-bind-port` vs `--stats-bind-port` — made O-0 "unresolvable" and blocked Path B for a week), R-23 (a docs page), and an issue cited by its title. **The ✅ recorded how confidently the sentence was written, not whether anyone had run it.**
+
+### ⚠️ Two things that will silently kill the fix. Read them before changing anything
+
+1. **Add a second node → the brand whose controller pod is not on the receiving node dies silently.** `Local` serves traffic **only where a local endpoint exists**. This is safe today *because* the cluster is one node (**O-4, closed by measurement 2026-07-16**). It is a fact about today, not an invariant.
+2. **Switch kube-proxy to `ipvs` → the fix stops working**, per kubernetes#97073. It is `iptables` today, set explicitly in the ConfigMap.
+
+### What the rest of this dossier is still for
+
+**The migration plans are the fallback for exactly the two cases above** — the day a second node is added, `externalTrafficPolicy: Local` stops being enough and Path A′ becomes relevant again. It is finished: **Rev 5, four adversarial review rounds, gate `verify-aprime.sh` at 110/0** from a cluster it rebuilds itself. Do not re-derive it under pressure; it is here.
+
+**And the measured facts about this cluster are true regardless of path** — O-4 (one node), the trusted-source value and the command that lies about it (`02-verified-facts.md` §1.6b), who actually SNATs (kube-proxy; kube-router never fires), the CNI conflist. Those cost real hours and they are correct.
+
+**Everything else — Paths A, A′ and B, the `haproxy-ingress` manifests on branch `haproxy-ic-migration-manifests`, R-01…R-22 — is about a road not taken.** Read it as history, not as a plan.
+
+**Session state:** `13-session-2026-07-16.md`. **Path B:** `11-handoff.md`.
+
+---
+
 **Subject:** everything investigated about the two public IPs, the loss of the real client IP after the move off AWS CloudFront, and the candidate fixes.
 
 **Session date:** 2026-07-09 (one long session). Written so a future agent can pick this up **without re-doing any of the verification below**.
