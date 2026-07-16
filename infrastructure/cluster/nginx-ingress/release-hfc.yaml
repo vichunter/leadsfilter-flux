@@ -31,6 +31,8 @@ spec:
         type: ClusterIP
         externalIPs:
           - "5.161.26.66"
+        # Real client IP; needs kube-proxy iptables mode. Why/limits: 03-refuted.md R-23
+        externalTrafficPolicy: Local
       config:
         use-gzip: "true"
         use-gunzip: "true"
