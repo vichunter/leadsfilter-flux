@@ -38,7 +38,7 @@ data:
   # Non-secret settings. The ad account customer id (digits only, no dashes).
   GoogleAds__CustomerId: "5055597217"
   # Rolling re-pull window: fetch segments.date >= today - LookbackDays (includes today).
-  GoogleAds__LookbackDays: "30"
+  GoogleAds__LookbackDays: "7"
   # true = log the add/update plan hourly but write nothing; flip to "false" for real writes.
   GoogleAds__DryRun: "false"
   # --- expected in secret 'leadstore' ---
