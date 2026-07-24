@@ -40,7 +40,7 @@ data:
   # Rolling re-pull window: fetch segments.date >= today - LookbackDays (includes today).
   GoogleAds__LookbackDays: "7"
   # true = log the add/update plan hourly but write nothing; flip to "false" for real writes.
-  GoogleAds__DryRun: "true"
+  GoogleAds__DryRun: "false"
   # --- expected in secret 'leadstore' ---
   # (placeholders; secret values override these via envFrom order)
   ConnectionStrings__StoreConnection: ""  # Host=postgres:5432;Database=leadsfilter-prod;Username=...;Password=...
