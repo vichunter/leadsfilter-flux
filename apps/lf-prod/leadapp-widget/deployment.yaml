@@ -17,21 +17,29 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: leadsfilter-n1
       containers:
+        # Stock nginx 1.31.3 (same version as nginx:alpine) built with ngx_brotli.
         - name: leadapp-widget
-          image: nginx:1.25-alpine-slim
+          image: fholzer/nginx-brotli:v1.31.3
           ports:
             - containerPort: 80
           volumeMounts:
-            - name: nginx-config
+            - name: nginx-conf
               mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
             - name: wwwroot
               mountPath: /app
+            # Compressed responses live here. Emptied on restart: the first request per file
+            # and encoding pays the compression cost again, every later one is served from it.
+            - name: cache
+              mountPath: /var/cache/nginx-widget
       volumes:
-        - name: nginx-config
-          hostPath:
-            path: /data/lf-prod/leadapp-widget/nginx/nginx.conf
-            type: File
+        - name: nginx-conf
+          configMap:
+            name: leadapp-widget-nginx-config
         - name: wwwroot
           hostPath:
             path: /data/lf-prod/leadapp-widget/wwwroot
             type: Directory
+        - name: cache
+          emptyDir: {}

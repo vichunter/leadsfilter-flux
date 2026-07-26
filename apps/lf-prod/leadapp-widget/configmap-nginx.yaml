@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: leadapp-widget-nginx-config
+  namespace: lf-prod
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  1;
+    # Errors go to the pod log. Set to /dev/null once the brotli/cache rollout is confirmed.
+    error_log   /dev/stderr  warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      # Static asset host: one request per page view, access logging is pure noise here.
+      access_log  /dev/null;
+      sendfile        on;
+      keepalive_timeout  65;
+
+      # Collapse the many Accept-Encoding spellings browsers send into one token,
+      # otherwise every variant creates its own cache entry holding identical bytes.
+      map $http_accept_encoding $enc {
+        default   "";
+        "~*br"    "br";
+        "~*gzip"  "gzip";
+      }
+
+      proxy_cache_path /var/cache/nginx-widget levels=1:2 keys_zone=widget:10m
+                       max_size=64m inactive=30d use_temp_path=off;
+
+      # Internal tier: serves the files and compresses them. Expensive levels are fine —
+      # each file is compressed once, everything after that is served from the cache.
+      server {
+        listen 127.0.0.1:8080;
+        server_tokens off;
+        root /app;
+
+        brotli on;
+        brotli_comp_level 11;
+        brotli_min_length 1000;
+        brotli_types text/plain text/css application/json application/javascript text/javascript application/xml image/svg+xml;
+
+        gzip on;
+        gzip_comp_level 9;
+        gzip_min_length 1000;
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml;
+      }
+
+      # Public tier: proxies to the internal one and stores the already-compressed response.
+      server {
+        listen       80;
+        server_name  localhost;
+        server_tokens off;
+
+        location / {
+          proxy_pass http://127.0.0.1:8080;
+          proxy_set_header Accept-Encoding $http_accept_encoding;
+
+          proxy_cache widget;
+          proxy_cache_key "$request_uri|$enc";
+          # Freshness window, not a compression interval: on expiry nginx revalidates with a
+          # conditional request and a 304 refreshes the entry without recompressing. Only a
+          # changed file triggers recompression. This is what picks up a newly deployed build.
+          proxy_cache_valid 200 5m;
+          proxy_cache_revalidate on;
+
+          # Diagnostic: HIT/MISS/REVALIDATED/EXPIRED. Safe to drop once verified.
+          add_header X-Cache $upstream_cache_status;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+          root   /usr/share/nginx/html;
+        }
+      }
+    }
