@@ -33,26 +33,41 @@ spec:
             # and encoding pays the compression cost again, every later one is served from it.
             - name: cache
               mountPath: /var/cache/nginx-widget
-          # Brotli 11 costs ~2 s for the pair of files and the cache starts empty, so the
-          # first visitor after a restart would pay it. Warm it here instead. Must always
-          # exit 0 and never hang: a failed or stuck postStart kills the container.
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - |
-                    for i in $(seq 1 60); do
-                      wget -q -O /dev/null http://127.0.0.1/wapp/v2/wapp.0.js && break
-                      sleep 1
-                    done
-                    for f in wapp.0.js wapp.0.css; do
-                      for ae in br gzip; do
-                        wget -q -O /dev/null --header="Accept-Encoding: $ae" "http://127.0.0.1/wapp/v2/$f"
-                      done
-                    done
-                    exit 0
+
+        # Brotli 11 costs ~2 s for the pair of files and the cache starts empty, so the
+        # first visitor after a restart would pay it. This warms it once over the shared
+        # loopback, then idles - exiting would put it in a restart loop.
+        - name: warmup
+          image: busybox:1.37
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              log() { echo "warmup: $*"; }
+              started=$(date +%s)
+              log "waiting for nginx"
+              ready=no
+              for i in $(seq 1 60); do
+                wget -q -O /dev/null http://127.0.0.1/wapp/v2/wapp.0.js && { ready=yes; break; }
+                sleep 1
+              done
+              if [ "$ready" = yes ]; then
+                log "nginx is up after $(( $(date +%s) - started ))s"
+                for f in wapp.0.js wapp.0.css; do
+                  for ae in br gzip; do
+                    t=$(date +%s)
+                    if wget -q -O /dev/null --header="Accept-Encoding: $ae" "http://127.0.0.1/wapp/v2/$f"; then
+                      log "warmed $f as $ae in $(( $(date +%s) - t ))s"
+                    else
+                      log "FAILED to warm $f as $ae"
+                    fi
+                  done
+                done
+                log "done in $(( $(date +%s) - started ))s"
+              else
+                log "nginx did not answer within 60s, giving up"
+              fi
+              exec sleep infinity
+
       volumes:
         - name: nginx-conf
           configMap:
