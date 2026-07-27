@@ -43,7 +43,21 @@ spec:
           args:
             - |
               log() { echo "warmup: $*"; }
-              started=$(date +%s)
+
+              # busybox date has no %N, so durations come from /proc/uptime, which is
+              # monotonic and immune to clock steps. The kernel prints centiseconds,
+              # so that is the unit here and the output carries two decimals — a third
+              # one would always be 0 and imply precision that does not exist.
+              now_cs() {
+                read -r up _ < /proc/uptime
+                frac=${up#*.}; frac=${frac#0}          # "05" -> "5": a leading zero would be read as octal
+                echo $(( ${up%.*} * 100 + ${frac:-0} ))
+              }
+              # One sample: two calls to now_cs could straddle a tick and split the
+              # seconds and fraction parts across different readings.
+              since() { d=$(( $(now_cs) - $1 )); printf '%d.%02d' $(( d / 100 )) $(( d % 100 )); }
+
+              started=$(now_cs)
               log "waiting for nginx"
               ready=no
               for i in $(seq 1 60); do
@@ -51,18 +65,18 @@ spec:
                 sleep 1
               done
               if [ "$ready" = yes ]; then
-                log "nginx is up after $(( $(date +%s) - started ))s"
+                log "nginx is up after $(since $started)s"
                 for f in wapp.0.js wapp.0.css; do
                   for ae in br gzip; do
-                    t=$(date +%s)
+                    t=$(now_cs)
                     if wget -q -O /dev/null --header="Accept-Encoding: $ae" "http://127.0.0.1/wapp/v2/$f"; then
-                      log "warmed $f as $ae in $(( $(date +%s) - t ))s"
+                      log "warmed $f as $ae in $(since $t)s"
                     else
                       log "FAILED to warm $f as $ae"
                     fi
                   done
                 done
-                log "done in $(( $(date +%s) - started ))s"
+                log "done in $(since $started)s"
               else
                 log "nginx did not answer within 60s, giving up"
               fi

@@ -29,8 +29,12 @@ data:
       # $request_uri keeps the query string verbatim (?wapp-... loader overrides);
       # $http_referer carries the host page URL, which is where the ad parameters
       # (gclid, tmsrc, tmcid, ...) actually live — the widget's own URL never has them.
+      # rt is $request_time: seconds with 3 decimals, whole request from the first
+      # byte read to the last byte written. bytes is the response body only, after
+      # compression — the number to compare against the size budget.
       log_format  widget_url  '$time_iso8601 $status $request_method '
                               '"$scheme://$host$request_uri" '
+                              'rt=${request_time}s bytes=$body_bytes_sent '
                               'ref="$http_referer" enc=$enc cache=$upstream_cache_status '
                               'ip=$remote_addr ua="$http_user_agent"';
 
