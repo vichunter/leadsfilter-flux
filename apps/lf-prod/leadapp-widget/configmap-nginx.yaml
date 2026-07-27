@@ -25,25 +25,27 @@ data:
       sendfile        on;
       keepalive_timeout  65;
 
-      # Request URLs to the pod log, for reconstructing real traffic in tests.
-      # $request_uri keeps the query string verbatim (?wapp-... loader overrides);
-      # $http_referer carries the host page URL, which is where the ad parameters
-      # (gclid, tmsrc, tmcid, ...) actually live — the widget's own URL never has them.
-      # rt is $request_time: seconds with 3 decimals, whole request from the first
-      # byte read to the last byte written. bytes is the response body only, after
-      # compression — the number to compare against the size budget.
+      # For reconstructing real traffic in tests. The ad parameters (gclid, tmsrc, ...)
+      # are in the referer, never in the widget's own URL. bytes is the body after
+      # compression.
       log_format  widget_url  '$time_iso8601 $status $request_method '
                               '"$scheme://$host$request_uri" '
                               'rt=${request_time}s bytes=$body_bytes_sent '
                               'ref="$http_referer" enc=$enc cache=$upstream_cache_status '
                               'ip=$remote_addr ua="$http_user_agent"';
 
-      # Collapse the many Accept-Encoding spellings browsers send into one token,
-      # otherwise every variant creates its own cache entry holding identical bytes.
+      # One token per encoding, otherwise every Accept-Encoding spelling gets its own
+      # cache entry. $enc is both the key and what the tier is sent, so it must decide
+      # like the tier does: q=0 means not acceptable, and "~*br" alone matches "br;q=0".
+      map $http_accept_encoding $enc_gzip {
+        default                   "";
+        "~*gzip\s*;\s*q=0(\.0+)?" "";
+        "~*gzip"                  "gzip";
+      }
       map $http_accept_encoding $enc {
-        default   "";
-        "~*br"    "br";
-        "~*gzip"  "gzip";
+        default                   $enc_gzip;
+        "~*br\s*;\s*q=0(\.0+)?"   $enc_gzip;
+        "~*br"                    "br";
       }
 
       proxy_cache_path /var/cache/nginx-widget levels=1:2 keys_zone=widget:10m
@@ -78,7 +80,8 @@ data:
 
         location / {
           proxy_pass http://127.0.0.1:8080;
-          proxy_set_header Accept-Encoding $http_accept_encoding;
+          # Normalized, not the raw header: same input as the cache key. Empty drops it.
+          proxy_set_header Accept-Encoding $enc;
 
           proxy_cache widget;
           proxy_cache_key "$request_uri|$enc";

@@ -44,29 +44,24 @@ spec:
             - |
               log() { echo "warmup: $*"; }
 
-              # busybox date has no %N, so durations come from /proc/uptime, which is
-              # monotonic and immune to clock steps. The kernel prints centiseconds,
-              # so that is the unit here and the output carries two decimals — a third
-              # one would always be 0 and imply precision that does not exist.
+              # busybox date has no %N; /proc/uptime is centiseconds, hence two decimals.
               now_cs() {
                 read -r up _ < /proc/uptime
-                frac=${up#*.}; frac=${frac#0}          # "05" -> "5": a leading zero would be read as octal
+                frac=${up#*.}; frac=${frac#0}          # "05" -> "5", else read as octal
                 echo $(( ${up%.*} * 100 + ${frac:-0} ))
               }
-              # One sample: two calls to now_cs could straddle a tick and split the
-              # seconds and fraction parts across different readings.
               since() { d=$(( $(now_cs) - $1 )); printf '%d.%02d' $(( d / 100 )) $(( d % 100 )); }
 
               started=$(now_cs)
               log "waiting for nginx"
               ready=no
               for i in $(seq 1 60); do
-                wget -q -O /dev/null http://127.0.0.1/wapp/v2/wapp.0.js && { ready=yes; break; }
+                wget -q -O /dev/null http://127.0.0.1/wapp/v2/wapp.js && { ready=yes; break; }
                 sleep 1
               done
               if [ "$ready" = yes ]; then
                 log "nginx is up after $(since $started)s"
-                for f in wapp.0.js wapp.0.css; do
+                for f in wapp.js wapp.0.js wapp.0.css; do
                   for ae in br gzip; do
                     t=$(now_cs)
                     if wget -q -O /dev/null --header="Accept-Encoding: $ae" "http://127.0.0.1/wapp/v2/$f"; then
