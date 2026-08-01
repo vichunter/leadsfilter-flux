@@ -56,6 +56,11 @@ data:
   ConversionGate__Rules__0__When__AdNetwork: "d"
   ConversionGate__Rules__0__Require__States: "MN"
   # Note: rule=N in the log is the position in the bound list, not the key number.
+  # --- Client campaigns budget dashboard (leadstore-cron FreezeClientCampaignReports task) ---
+  # Freeze a month's report N days after month end (Google restates the recent window; 7 = LookbackDays).
+  ClientCampaigns__FreezeDelayDays: "7"
+  # true = log the freeze plan daily but write nothing; flip to "false" after watching the log.
+  ClientCampaigns__DryRun: "true"
   # --- expected in secret 'leadstore' ---
   # (placeholders; secret values override these via envFrom order)
   ConnectionStrings__StoreConnection: ""  # Host=postgres:5432;Database=leadsfilter-prod;Username=...;Password=...
