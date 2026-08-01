@@ -53,7 +53,7 @@ data:
   # AdNetwork: g = search, s = search partners, d = display.
   ConversionGate__Rules__0__When__AdSource: "gcpc"
   ConversionGate__Rules__0__When__AdCampaignId: "10729629253"
-  ConversionGate__Rules__0__When__AdNetwork: "g"
+  ConversionGate__Rules__0__When__AdNetwork: "d"
   ConversionGate__Rules__0__Require__States: "MN"
   # Note: rule=N in the log is the position in the bound list, not the key number.
   # --- expected in secret 'leadstore' ---
