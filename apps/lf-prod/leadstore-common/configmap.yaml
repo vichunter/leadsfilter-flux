@@ -57,8 +57,9 @@ data:
   ConversionGate__Rules__0__Require__States: "MN"
   # Note: rule=N in the log is the position in the bound list, not the key number.
   # --- Client campaigns budget dashboard (leadstore-cron FreezeClientCampaignReports task) ---
-  # Freeze a month's report N days after month end (Google restates the recent window; 7 = LookbackDays).
-  ClientCampaigns__FreezeDelayDays: "7"
+  # Freeze a month's report N days after month end. 3 = owner's call: the client should not wait a
+  # week; residual Google restatements are caught by the admin drift indicator + explicit Refreeze.
+  ClientCampaigns__FreezeDelayDays: "3"
   # true = log the freeze plan daily but write nothing; flip to "false" after watching the log.
   ClientCampaigns__DryRun: "true"
   # --- expected in secret 'leadstore' ---
