@@ -91,6 +91,9 @@ data:
           proxy_cache_valid 200 5m;
           proxy_cache_revalidate on;
 
+          # Browser cache, not the proxy cache above.
+          expires 10m;
+
           # Diagnostic: HIT/MISS/REVALIDATED/EXPIRED. Safe to drop once verified.
           add_header X-Cache $upstream_cache_status;
         }
