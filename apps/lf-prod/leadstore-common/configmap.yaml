@@ -43,7 +43,7 @@ data:
   GoogleAds__DryRun: "false"
   # --- Conversion gate (leadapp-api: withhold the Google conversion for off-target states) ---
   # true = decide and log, but still report the conversion; flip to "false" to actually withhold.
-  ConversionGate__DryRun: "true"
+  ConversionGate__DryRun: "false"
   # One line per save that had a conversion decision: conversion-gate: lead=.. rule=.. allowed=..
   ConversionGate__Log: "true"
   # A rule is a When (which leads it applies to) plus a Require (what those leads must satisfy).
@@ -51,10 +51,21 @@ data:
   # matches, so every extra term can only shrink the match set. Require__States takes a comma list.
   # Everything compares case-insensitively on trimmed values. With no Rules__* keys the gate is a no-op.
   # AdNetwork: g = search, s = search partners, d = display.
+  # Example:
+  #  ConversionGate__Rules__0__When__AdSource: "gcpc"
+  #  ConversionGate__Rules__0__When__AdCampaignId: "10729629253"
+  #  ConversionGate__Rules__0__When__AdNetwork: "d"
+  #  ConversionGate__Rules__0__Require__States: "MN"
+  # -----
+  # ----- MN Q3
   ConversionGate__Rules__0__When__AdSource: "gcpc"
   ConversionGate__Rules__0__When__AdCampaignId: "10729629253"
-  ConversionGate__Rules__0__When__AdNetwork: "d"
   ConversionGate__Rules__0__Require__States: "MN"
+  # ----- MN Q3 - display
+  ConversionGate__Rules__1__When__AdSource: "gcpc"
+  ConversionGate__Rules__1__When__AdCampaignId: "24128122764"
+  ConversionGate__Rules__1__Require__States: "MN"
+  # -----
   # Note: rule=N in the log is the position in the bound list, not the key number.
   # --- Client campaigns budget dashboard (leadstore-cron FreezeClientCampaignReports task) ---
   # Freeze a month's report N days after month end. 3 = owner's call: the client should not wait a
